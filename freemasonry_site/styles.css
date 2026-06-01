@@ -1,0 +1,20 @@
+:root{--accent:#2b547e;--muted:#666}
+*{box-sizing:border-box;font-family:Inter,Segoe UI,Arial,Helvetica,sans-serif}
+body{margin:0;color:#111;background:#f7f9fb}
+.nav{display:flex;justify-content:space-between;align-items:center;padding:1rem 2rem;background:#fff;border-bottom:1px solid #e6eef6}
+.brand{font-weight:700;color:var(--accent);text-decoration:none}
+.hero{padding:3rem 0;background:linear-gradient(180deg,#f0f6fb 0,#fff 100%);}
+.hero-content{max-width:900px;margin:0 auto;text-align:center;padding:2rem}
+.hero h1{font-size:2rem;margin:0 0 0.5rem}
+.lead{color:var(--muted);margin:0 0 1rem}
+.container{max-width:900px;margin:2rem auto;padding:0 1rem}
+h2{color:var(--accent)}
+ul{line-height:1.6}
+dl dt{font-weight:700}
+.blockquote, blockquote{border-left:4px solid #dfeaf5;padding:0.5rem 1rem;margin:0;background:#fff}
+.button{display:inline-block;background:var(--accent);color:#fff;padding:0.6rem 1rem;border-radius:6px;text-decoration:none}
+.site-footer{padding:1rem 2rem;text-align:center;color:var(--muted);font-size:0.9rem}
+@media(min-width:700px){.hero h1{font-size:2.6rem}}
+
+/* small header for about page */
+.small-header{background:#fff;border-bottom:1px solid #e6eef6;padding:0.5rem 0}
