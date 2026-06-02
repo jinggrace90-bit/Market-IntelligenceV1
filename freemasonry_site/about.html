@@ -7,13 +7,14 @@
   <meta name="description" content="Building Good People. Strengthening Communities. Learn more about NewZealand Lodge (No. 123), our principles, symbols, and role in civic life.">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <header class="small-header">
-    <nav class="nav">
-      <a class="brand" href="index.html">NewZealand Lodge (No. 123)</a>
-      <a href="about.html">About</a>
-    </nav>
-  </header>
+<body id="vanta-bg">
+  <div class="content-wrapper">
+    <header class="small-header">
+      <nav class="nav">
+        <a class="brand" href="index.html"><img class="site-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/openai.svg" alt="ChatGPT logo"> NewZealand Lodge (No. 123)</a>
+        <a href="about.html">About</a>
+      </nav>
+    </header>
 
   <main class="container">
     <article>
@@ -49,8 +50,21 @@
   <footer class="site-footer">
     <p>&copy; <span id="year"></span> NewZealand Lodge (No. 123). Contact: <a href="mailto:secretary@lodgename.com">secretary@lodgename.com</a></p>
   </footer>
+  </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.21/vanta.net.min.js"></script>
   <script>
+    VANTA.NET({
+      el: "#vanta-bg",
+      THREE: THREE,
+      color: 0x224f7d,
+      backgroundColor: 0xf7f9fb,
+      points: 12.00,
+      maxDistance: 22.00,
+      spacing: 18.00,
+      showDots: false
+    });
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
 </body>

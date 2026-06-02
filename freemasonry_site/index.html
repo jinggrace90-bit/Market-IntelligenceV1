@@ -7,13 +7,14 @@
   <meta name="description" content="Welcome to NewZealand Lodge (No. 123), a community of Freemasons dedicated to integrity, friendship, respect, and charity. Discover our history and core principles of brotherly love.">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <header class="hero">
-    <nav class="nav">
-      <a class="brand" href="index.html">[Lodge Name]</a>
-      <a href="about.html">About</a>
-    </nav>
-    <div class="hero-content">
+<body id="vanta-bg">
+  <div class="content-wrapper">
+    <header class="hero">
+      <nav class="nav">
+        <a class="brand" href="index.html"><img class="site-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/openai.svg" alt="ChatGPT logo"> NewZealand Lodge (No. 123)</a>
+        <a href="about.html">About</a>
+      </nav>
+      <div class="hero-content">
       <h1>Building Good People. Strengthening Communities.</h1>
       <p class="lead">Welcome to <strong>NewZealand Lodge (No. 123)</strong>. We bring men together across backgrounds to practice integrity, friendship, and charity.</p>
       <p class="cta">Learn more about our values and how to get involved.</p>
@@ -41,14 +42,20 @@
       </ul>
 
       <h3>The Core Symbols</h3>
-      <dl>
-        <dt>Square</dt>
-        <dd>Morality and honesty.</dd>
-        <dt>Compasses</dt>
-        <dd>Self-discipline and appropriate boundaries.</dd>
-        <dt>Letter 'G'</dt>
-        <dd>Geometry (order of the universe) and God (the Supreme Being).</dd>
-      </dl>
+      <div class="symbol-cards">
+        <div class="symbol-card">
+          <h4>Square</h4>
+          <p>Morality and honesty.</p>
+        </div>
+        <div class="symbol-card">
+          <h4>Compasses</h4>
+          <p>Self-discipline and appropriate boundaries.</p>
+        </div>
+        <div class="symbol-card">
+          <h4>Letter 'G'</h4>
+          <p>Geometry (order of the universe) and God (the Supreme Being).</p>
+        </div>
+      </div>
 
       <h3>The Core Goal</h3>
       <blockquote>"Making good men better."</blockquote>
@@ -65,8 +72,21 @@
   <footer class="site-footer">
     <p>&copy; <span id="year"></span> NewZealand Lodge (No. 123). All rights reserved. Contact: <a href="mailto:secretary@lodgename.com">secretary@lodgename.com</a></p>
   </footer>
+  </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.21/vanta.net.min.js"></script>
   <script>
+    VANTA.NET({
+      el: "#vanta-bg",
+      THREE: THREE,
+      color: 0x224f7d,
+      backgroundColor: 0xf7f9fb,
+      points: 12.00,
+      maxDistance: 22.00,
+      spacing: 18.00,
+      showDots: false
+    });
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
 </body>
