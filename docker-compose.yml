@@ -1,0 +1,78 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mid_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mid}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mid_password}
+      POSTGRES_DB: ${POSTGRES_DB:-market_intelligence}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mid} -d ${POSTGRES_DB:-market_intelligence}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: mid_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: mid_server
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-mid}:${POSTGRES_PASSWORD:-mid_password}@postgres:5432/${POSTGRES_DB:-market_intelligence}?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change_me_in_production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      FINNHUB_API_KEY: ${FINNHUB_API_KEY:-}
+      NEWSAPI_KEY: ${NEWSAPI_KEY:-}
+      ALPHAVANTAGE_API_KEY: ${ALPHAVANTAGE_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5-20251001}
+    ports:
+      - "4000:4000"
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
+    container_name: mid_web
+    restart: unless-stopped
+    depends_on:
+      - server
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
+  redis_data:

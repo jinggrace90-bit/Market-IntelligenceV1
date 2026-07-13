@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String          @id @default(cuid())
+  email        String          @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  watchlist    WatchlistItem[]
+
+  @@map("users")
+}
+
+model WatchlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  symbol    String
+  name      String?
+  assetType String   @default("stock") // stock | etf | crypto | commodity | index
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, symbol])
+  @@index([userId])
+  @@map("watchlist_items")
+}
+
+// Persisted cache of fetched news so the feed survives restarts and
+// supports search/pagination without re-hitting external providers.
+model NewsArticle {
+  id            String   @id @default(cuid())
+  externalId    String   @unique // hash of url — dedupes across feeds
+  title         String
+  url           String
+  source        String
+  category      String?
+  country       String?
+  imageUrl      String?
+  summary       String?
+  publishedAt   DateTime
+  relatedAssets String[] @default([])
+  importance    Int      @default(0) // 0-100 heuristic importance score
+  createdAt     DateTime @default(now())
+
+  analysis NewsAnalysis?
+
+  @@index([publishedAt])
+  @@index([category])
+  @@map("news_articles")
+}
+
+// AI analysis is cached per-article so we never re-spend tokens.
+model NewsAnalysis {
+  id               String   @id @default(cuid())
+  articleId        String   @unique
+  summary          String
+  keyEvents        String[] @default([])
+  sentiment        String // bullish | bearish | neutral
+  sentimentScore   Float    @default(0) // -1..1
+  affectedSectors  String[] @default([])
+  affectedAssets   String[] @default([])
+  marketImplication String
+  model            String
+  createdAt        DateTime @default(now())
+
+  article NewsArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("news_analyses")
+}
