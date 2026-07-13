@@ -31,8 +31,12 @@ api.interceptors.response.use(
   (error) => {
     if (error?.response?.status === 401 && typeof window !== 'undefined') {
       setToken(null);
+      // Don't force a redirect for the session probe: a 401 from /auth/me just
+      // means "not logged in", which the dashboard supports as guest mode.
+      const url = error.config?.url ?? '';
+      const isSessionProbe = url.includes('/auth/me');
       // Avoid redirect loops on the auth pages.
-      if (!['/login', '/register'].includes(window.location.pathname)) {
+      if (!isSessionProbe && !['/login', '/register'].includes(window.location.pathname)) {
         window.location.href = '/login';
       }
     }
