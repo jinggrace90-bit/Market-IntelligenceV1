@@ -33,7 +33,7 @@ services:
 
   server:
     build:
-      context: ./server
+      context: ./server_py
       dockerfile: Dockerfile
     container_name: mid_server
     restart: unless-stopped
@@ -55,6 +55,15 @@ services:
       ALPHAVANTAGE_API_KEY: ${ALPHAVANTAGE_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5-20251001}
+      # AI_PROVIDER=local uses any OpenAI-compatible server: a free local one
+      # (e.g. Ollama on your HOST — host.docker.internal reaches it from the
+      # container) OR a free cloud API like Groq. See .env.example for details.
+      AI_PROVIDER: ${AI_PROVIDER:-anthropic}
+      LOCAL_AI_BASE_URL: ${LOCAL_AI_BASE_URL:-http://host.docker.internal:11434/v1}
+      LOCAL_AI_MODEL: ${LOCAL_AI_MODEL:-qwen2.5:3b}
+      LOCAL_AI_API_KEY: ${LOCAL_AI_API_KEY:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "4000:4000"
 

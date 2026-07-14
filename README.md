@@ -30,9 +30,9 @@ If an optional key is missing, that feature degrades gracefully (e.g. AI panels 
 
 **Frontend** — Next.js 15 · React 19 · TypeScript · Ant Design 5 · Tailwind CSS · TanStack Query · Zustand · React Hook Form · Recharts · Framer Motion · Socket.IO client
 
-**Backend** — Node.js · Express · TypeScript · REST + WebSocket (Socket.IO) · JWT auth (bcrypt) · node-cron
+**Backend** — Python 3.12 · FastAPI · uvicorn (ASGI) · REST + WebSocket (python-socketio) · JWT auth (PyJWT + passlib/bcrypt) · APScheduler · httpx · yfinance · feedparser · Anthropic SDK
 
-**Data** — PostgreSQL · Prisma ORM · Redis (cache)
+**Data** — PostgreSQL · SQLAlchemy 2.0 (async, asyncpg) · Alembic migrations · Redis (cache)
 
 **Infra** — Docker · Docker Compose
 
@@ -42,13 +42,13 @@ If an optional key is missing, that feature degrades gracefully (e.g. AI panels 
 External APIs (Yahoo / RSS / alternative.me / ForexFactory / Finnhub / Claude)
         │
         ▼
-Express services  ──►  Redis cache  ──►  PostgreSQL (news + analyses + users + watchlist)
+FastAPI services  ──►  Redis cache  ──►  PostgreSQL (news + analyses + users + watchlist)
         │
         ▼
 Socket.IO push  ──►  Next.js dashboard (TanStack Query + Zustand)
 ```
 
-Cron jobs ingest news every 5 min and warm market/sentiment/calendar caches. WebSocket channels push `market:overview` (15s), `news:latest` (60s), and `sentiment` (5m) to all clients, with an immediate snapshot on connect.
+APScheduler jobs ingest news every 5 min and warm market/sentiment/calendar caches. WebSocket channels push `market:overview` (15s), `news:latest` (60s), and `sentiment` (5m) to all clients, with an immediate snapshot on connect.
 
 ---
 
@@ -66,7 +66,7 @@ Then open:
 - **Dashboard** → http://localhost:3000
 - **API health** → http://localhost:4000/api/health
 
-Compose brings up Postgres, Redis, the API/WebSocket server (which auto-applies the Prisma schema on boot), and the Next.js frontend. No mock data — the news ingester and cache warmers run on startup.
+Compose brings up Postgres, Redis, the API/WebSocket server (which runs Alembic migrations on boot), and the Next.js frontend. No mock data — the news ingester and cache warmers run on startup.
 
 To stop: `docker compose down` (add `-v` to also wipe the database volume).
 
@@ -74,24 +74,29 @@ To stop: `docker compose down` (add `-v` to also wipe the database volume).
 
 ## 🛠️ Local development (without Docker)
 
-You need Node 20+, plus a local PostgreSQL and Redis (or point the env vars at hosted ones).
+You need Python 3.11+ and Node 20+, plus a local PostgreSQL and Redis (or point the env vars at hosted ones).
 
 ```bash
-# 1. Install dependencies
-npm run install:all
-
-# 2. Configure the backend
+# 1. Configure the backend
 cp .env.example .env        # ensure DATABASE_URL / REDIS_URL point at your instances
 
-# 3. Create the database schema
-cd server && npx prisma db push && cd ..
+# 2. Backend (Python) — API + WebSocket
+cd server_py
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+alembic upgrade head                       # create the database schema
+uvicorn app.main:asgi --port 4000 --reload # http://localhost:4000
+cd ..
 
-# 4. Run backend (API + WebSocket) and frontend in two terminals
-npm run dev:server          # http://localhost:4000
+# 3. Frontend (in a second terminal)
+npm --prefix web install
 npm run dev:web             # http://localhost:3000
 ```
 
-The frontend reads `NEXT_PUBLIC_API_URL` (defaults to `http://localhost:4000`).
+The frontend reads `NEXT_PUBLIC_API_URL` (defaults to `http://localhost:4000`). The
+backend runs with **zero API keys**; add optional keys to `.env` to unlock extras.
+
+Lint the backend with [`ruff`](https://docs.astral.sh/ruff/): `cd server_py && ruff check .`
 
 ---
 
@@ -104,9 +109,40 @@ See [`.env.example`](.env.example). Highlights:
 | `DATABASE_URL` | Postgres connection | local compose value |
 | `REDIS_URL` | Redis connection | `redis://localhost:6379` |
 | `JWT_SECRET` | Auth token signing — **change in production** | dev placeholder |
-| `ANTHROPIC_API_KEY` | Enables AI news + macro analysis | *(empty)* |
+| `AI_PROVIDER` | `anthropic` (needs a key) or `local` (free, no key) | `anthropic` |
+| `ANTHROPIC_API_KEY` | Enables AI news + macro analysis when `AI_PROVIDER=anthropic` | *(empty)* |
 | `ANTHROPIC_MODEL` | Claude model id | `claude-haiku-4-5-20251001` |
+| `LOCAL_AI_BASE_URL` / `LOCAL_AI_MODEL` / `LOCAL_AI_API_KEY` | OpenAI-compatible server (local Ollama **or** a free cloud API like Groq) when `AI_PROVIDER=local` | `http://localhost:11434/v1` / `qwen2.5:3b` / *(empty)* |
 | `FINNHUB_API_KEY` / `NEWSAPI_KEY` / `ALPHAVANTAGE_API_KEY` | Optional data enrichment | *(empty)* |
+
+### Free AI analysis without Claude (`AI_PROVIDER=local`)
+
+"AI News Analysis" and "AI Macro Analysis" can run against any OpenAI-compatible server
+instead of Claude. Two free ways:
+
+**Option A — Free cloud API (runs 24/7, recommended for a deployed site).** A hosted provider
+like [Groq](https://console.groq.com) has a generous free tier and needs no machine of your
+own. In `.env`:
+
+```
+AI_PROVIDER=local
+LOCAL_AI_BASE_URL=https://api.groq.com/openai/v1
+LOCAL_AI_API_KEY=<your Groq key>
+LOCAL_AI_MODEL=llama-3.3-70b-versatile   # check Groq's console for current model IDs
+```
+
+**Option B — Local model (free, but only while your computer is on).**
+
+1. Install [Ollama](https://ollama.com).
+2. Pull a small model: `ollama pull qwen2.5:3b` (~2GB; plenty for summarizing/tagging news,
+   small enough not to bog down a laptop — no need to go to 7B+).
+3. Set `AI_PROVIDER=local` (defaults already point at Ollama's local port; no key needed).
+4. When the API runs in `docker-compose` and Ollama runs on your host, use
+   `LOCAL_AI_BASE_URL=http://host.docker.internal:11434/v1` (already the compose default).
+
+Models are distributed pre-quantized on Hugging Face per runtime (GGUF for Ollama/llama.cpp,
+MLX for Apple-Silicon runtimes like LM Studio) — pull the format your runtime expects; no
+manual conversion needed.
 
 ---
 
@@ -116,16 +152,21 @@ See [`.env.example`](.env.example). Highlights:
 .
 ├── docker-compose.yml
 ├── .env.example
-├── server/                     # Express + Socket.IO + Prisma API
-│   ├── prisma/schema.prisma    # User, WatchlistItem, NewsArticle, NewsAnalysis
-│   └── src/
-│       ├── config/             # env + tracked market symbols
-│       ├── lib/                # prisma + redis (cache-aside helper)
-│       ├── middleware/         # JWT auth + error handling
-│       ├── services/           # marketData, news, sentiment, economicCalendar, ai, search, auth, watchlist
-│       ├── routes/             # REST endpoints
-│       ├── websocket/          # Socket.IO channels + broadcasters
-│       └── jobs/               # cron ingestion + cache warming
+├── server_py/                  # FastAPI + python-socketio + SQLAlchemy API
+│   ├── requirements.txt
+│   ├── alembic/                # database migrations (User, WatchlistItem, NewsArticle, NewsAnalysis)
+│   └── app/
+│       ├── config.py           # settings (pydantic-settings)
+│       ├── symbols.py          # tracked market symbols
+│       ├── db.py · models.py   # async engine + SQLAlchemy models
+│       ├── cache.py            # redis cache-aside helper
+│       ├── security.py · deps.py  # JWT auth + password hashing
+│       ├── errors.py           # error handlers (TS-compatible shapes)
+│       ├── services/           # market_data, news, sentiment, economic_calendar, ai, search, auth, watchlist
+│       ├── routers/            # REST endpoints
+│       ├── realtime.py         # Socket.IO channels + broadcasters
+│       └── jobs.py             # APScheduler ingestion + cache warming
+├── server/                     # (legacy) original TypeScript/Express backend — kept for reference
 └── web/                        # Next.js 15 App Router frontend
     └── src/
         ├── app/                # dashboard, login, register

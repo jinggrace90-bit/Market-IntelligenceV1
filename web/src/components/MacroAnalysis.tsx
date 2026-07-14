@@ -32,7 +32,13 @@ export function MacroAnalysis({ enabled }: { enabled: boolean }) {
     setError(null);
     setChain(null);
     try {
-      const { data } = await api.post('/ai/macro', { scenario: text.trim() });
+      // Local (non-Anthropic) AI providers can take much longer than the
+      // default client timeout, especially on modest hardware.
+      const { data } = await api.post(
+        '/ai/macro',
+        { scenario: text.trim() },
+        { timeout: 120_000 },
+      );
       setChain(data);
     } catch (e) {
       setError(apiError(e, 'Macro analysis failed'));

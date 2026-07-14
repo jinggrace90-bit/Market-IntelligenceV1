@@ -1,0 +1,18 @@
+# Never copy host-built artifacts into the image — the build installs its own.
+# (Host node_modules are platform-specific and would clobber the container's.)
+node_modules
+.next
+out
+build
+
+# Local env + secrets (the image gets config via build args / runtime env).
+.env
+.env.local
+.env.*.local
+
+# VCS / editor / OS cruft
+.git
+.gitignore
+.DS_Store
+*.log
+npm-debug.log*

@@ -4,10 +4,14 @@
   "private": true,
   "description": "Real-time AI Market Intelligence Dashboard — live markets, news, sentiment, macro analysis.",
   "scripts": {
-    "dev:server": "npm --prefix server run dev",
+    "dev:server": "cd server_py && uvicorn app.main:asgi --host 0.0.0.0 --port 4000 --reload",
     "dev:web": "npm --prefix web run dev",
-    "install:all": "npm --prefix server install && npm --prefix web install",
-    "typecheck": "npm --prefix server run typecheck && npm --prefix web run typecheck",
+    "install:server": "cd server_py && pip install -r requirements.txt",
+    "install:web": "npm --prefix web install",
+    "install:all": "npm run install:server && npm run install:web",
+    "migrate": "cd server_py && alembic upgrade head",
+    "lint:server": "cd server_py && ruff check .",
+    "typecheck": "npm --prefix web run typecheck",
     "docker:up": "docker compose up --build",
     "docker:down": "docker compose down"
   }

@@ -31,7 +31,9 @@ export function AiAnalysisModal({
     setError(null);
     setAnalysis(null);
     api
-      .post(`/ai/news/${article.id}`)
+      // Local (non-Anthropic) AI providers can take much longer than the
+      // default client timeout, especially on modest hardware.
+      .post(`/ai/news/${article.id}`, undefined, { timeout: 120_000 })
       .then((r) => active && setAnalysis(r.data))
       .catch((e) => active && setError(apiError(e, 'AI analysis failed')))
       .finally(() => active && setLoading(false));

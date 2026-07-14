@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { Button, Input, Alert } from 'antd';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -20,7 +20,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<Fields>();
@@ -61,28 +61,46 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
           {mode === 'register' && (
             <div>
               <label className="mb-1 block text-[12px] text-gray-400">Name</label>
-              <Input placeholder="Jane Investor" {...register('name')} />
+              <Controller
+                name="name"
+                control={control}
+                render={({ field }) => <Input placeholder="Jane Investor" {...field} />}
+              />
             </div>
           )}
           <div>
             <label className="mb-1 block text-[12px] text-gray-400">Email</label>
-            <Input
-              type="email"
-              placeholder="you@example.com"
-              status={errors.email ? 'error' : ''}
-              {...register('email', { required: 'Email is required' })}
+            <Controller
+              name="email"
+              control={control}
+              rules={{ required: 'Email is required' }}
+              render={({ field }) => (
+                <Input
+                  type="email"
+                  placeholder="you@example.com"
+                  status={errors.email ? 'error' : ''}
+                  {...field}
+                />
+              )}
             />
             {errors.email && <p className="mt-1 text-[11px] text-down">{errors.email.message}</p>}
           </div>
           <div>
             <label className="mb-1 block text-[12px] text-gray-400">Password</label>
-            <Input.Password
-              placeholder="••••••••"
-              status={errors.password ? 'error' : ''}
-              {...register('password', {
+            <Controller
+              name="password"
+              control={control}
+              rules={{
                 required: 'Password is required',
                 minLength: { value: 8, message: 'At least 8 characters' },
-              })}
+              }}
+              render={({ field }) => (
+                <Input.Password
+                  placeholder="••••••••"
+                  status={errors.password ? 'error' : ''}
+                  {...field}
+                />
+              )}
             />
             {errors.password && (
               <p className="mt-1 text-[11px] text-down">{errors.password.message}</p>
