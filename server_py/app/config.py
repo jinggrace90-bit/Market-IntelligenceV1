@@ -57,6 +57,17 @@ class Settings(BaseSettings):
         return [o.strip() for o in self.cors_origin.split(",") if o.strip()]
 
     @property
+    def db_requires_ssl(self) -> bool:
+        """Managed Postgres (Neon, Supabase, Render, …) requires TLS, signalled
+        by ``sslmode=require`` / ``ssl=require`` in the connection string. asyncpg
+        doesn't read that query param, so we translate it into a connect arg
+        (see db.py). Local/Docker Postgres has no such flag and stays plaintext."""
+        lowered = self.database_url.lower()
+        return any(
+            flag in lowered for flag in ("sslmode=require", "ssl=require", "sslmode=verify")
+        )
+
+    @property
     def sqlalchemy_url(self) -> str:
         """Convert a Prisma/psql-style URL into an asyncpg SQLAlchemy URL.
 
