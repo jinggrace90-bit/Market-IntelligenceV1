@@ -17,7 +17,7 @@ Every number and headline comes from a live source. The app runs with **zero API
 | Market Overview (indices, commodities, crypto, yields, DXY, VIX) | **Yahoo Finance** | ❌ No |
 | Live News Feed | **RSS**: CNBC, Yahoo Finance, Investing.com, MarketWatch, FT, Seeking Alpha | ❌ No |
 | Market Sentiment — Fear & Greed | **alternative.me** | ❌ No |
-| Economic Calendar | **ForexFactory** weekly feed (faireconomy mirror) | ❌ No |
+| Economic Calendar | **ForexFactory** mirror → **Tradays/MQL5** fallback | ❌ No |
 | Global Search (instruments) | **Yahoo Finance** | ❌ No |
 | Richer news + economic calendar | **NewsAPI**, **Finnhub** | ✅ Optional |
 | AI News Analysis & AI Macro Analysis | **Anthropic Claude** | ✅ Optional |
@@ -39,7 +39,7 @@ If an optional key is missing, that feature degrades gracefully (e.g. AI panels 
 ### Architecture
 
 ```
-External APIs (Yahoo / RSS / alternative.me / ForexFactory / Finnhub / Claude)
+External APIs (Yahoo / RSS / alternative.me / ForexFactory+Tradays / Finnhub / Claude)
         │
         ▼
 FastAPI services  ──►  Redis cache  ──►  PostgreSQL (news + analyses + users + watchlist)
@@ -159,14 +159,13 @@ manual conversion needed.
 │       ├── config.py           # settings (pydantic-settings)
 │       ├── symbols.py          # tracked market symbols
 │       ├── db.py · models.py   # async engine + SQLAlchemy models
-│       ├── cache.py            # redis cache-aside helper
+│       ├── cache.py            # redis + in-memory cache-aside helper
 │       ├── security.py · deps.py  # JWT auth + password hashing
 │       ├── errors.py           # error handlers (TS-compatible shapes)
 │       ├── services/           # market_data, news, sentiment, economic_calendar, ai, search, auth, watchlist
 │       ├── routers/            # REST endpoints
 │       ├── realtime.py         # Socket.IO channels + broadcasters
 │       └── jobs.py             # APScheduler ingestion + cache warming
-├── server/                     # (legacy) original TypeScript/Express backend — kept for reference
 └── web/                        # Next.js 15 App Router frontend
     └── src/
         ├── app/                # dashboard, login, register
@@ -202,7 +201,8 @@ manual conversion needed.
 
 ## 📝 Notes & honest limitations
 
-- **Provider rate limits**: Yahoo Finance and the ForexFactory feed occasionally throttle by IP (HTTP 429). Redis caching and request throttling keep this rare; endpoints degrade to an empty/last-known state rather than erroring.
+- **Provider rate limits**: Yahoo Finance and the ForexFactory feed occasionally throttle by IP (HTTP 429). Redis caching, in-memory fallback caching, and request throttling keep this rare; endpoints degrade to the last-known state rather than erroring.
+- **Economic Calendar reliability**: The primary source (ForexFactory mirror at `nfs.faireconomy.media`) is an unofficial community mirror and can be intermittent. When it fails, the backend automatically falls back to **Tradays/MQL5** (MetaQuotes' official calendar). An in-memory cache also keeps the last successful result for 1 hour, so brief outages from both sources are transparent to users.
 - **US 2Y yield**: Yahoo doesn't expose a clean 2Y index ticker, so the rates row uses 10Y (`^TNX`), 5Y (`^FVX`), and 13-week (`^IRX`) as available proxies.
 - **AI cost control**: AI endpoints require login and cache every result in Postgres so tokens are never re-spent on the same article.
 - The Fear & Greed Index from alternative.me is crypto-derived but widely used as a broad market risk-appetite proxy.
