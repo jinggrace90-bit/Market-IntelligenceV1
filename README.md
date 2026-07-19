@@ -20,7 +20,7 @@ Every number and headline comes from a live source. The app runs with **zero API
 | Economic Calendar | **ForexFactory** mirror → **Tradays/MQL5** fallback | ❌ No |
 | Global Search (instruments) | **Yahoo Finance** | ❌ No |
 | Richer news + economic calendar | **NewsAPI**, **Finnhub** | ✅ Optional |
-| AI News Analysis & AI Macro Analysis | **Anthropic Claude** | ✅ Optional |
+| AI News Analysis & AI Macro Analysis | **Groq** | ✅ Optional |
 
 If an optional key is missing, that feature degrades gracefully (e.g. AI panels show a "configure a key" notice) — the rest keeps working.
 
