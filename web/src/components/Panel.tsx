@@ -21,7 +21,7 @@ export function Panel({ title, subtitle, action, children, className = '', bodyC
         </div>
         {action}
       </header>
-      <div className={`p-4 ${bodyClassName}`}>{children}</div>
+      <div className={`overflow-x-auto p-4 ${bodyClassName}`}>{children}</div>
     </section>
   );
 }

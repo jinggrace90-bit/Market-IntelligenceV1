@@ -40,8 +40,8 @@ export function TopBar({ connected }: { connected: boolean }) {
   };
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-border bg-bg/90 px-4 py-3 backdrop-blur md:px-6">
-      <div className="flex items-center gap-2">
+    <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-border bg-bg/90 px-3 py-3 backdrop-blur sm:gap-4 sm:px-4 md:px-6">
+      <div className="flex shrink-0 items-center gap-2">
         <div className="grid h-8 w-8 place-items-center rounded-lg bg-accent font-bold text-white">
           M
         </div>
@@ -51,13 +51,13 @@ export function TopBar({ connected }: { connected: boolean }) {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-md">
+      <div className="min-w-0 flex-1 md:mx-auto md:max-w-md">
         <AutoComplete
           options={options}
           onSearch={onSearch}
           onSelect={onSelect}
           className="w-full"
-          popupMatchSelectWidth={420}
+          popupMatchSelectWidth={Math.min(420, typeof window !== 'undefined' ? window.innerWidth - 32 : 420)}
         >
           <div className="relative">
             <SearchOutlined className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-gray-500" />
@@ -69,7 +69,7 @@ export function TopBar({ connected }: { connected: boolean }) {
         </AutoComplete>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         <Badge
           status={connected ? 'success' : 'warning'}
           text={<span className="hidden text-[11px] text-gray-400 md:inline">{connected ? 'Live' : 'Connecting'}</span>}

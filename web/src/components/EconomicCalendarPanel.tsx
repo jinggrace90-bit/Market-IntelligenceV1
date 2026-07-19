@@ -45,36 +45,40 @@ export function EconomicCalendarPanel() {
       {!isLoading && rows.length === 0 ? (
         <Empty description="No calendar events available" />
       ) : (
-        <Table<EconomicEvent>
-          loading={isLoading}
-          dataSource={rows}
-          rowKey="id"
-          size="small"
-          pagination={{ pageSize: 8, size: 'small' }}
-          columns={[
-            {
-              title: 'Date',
-              dataIndex: 'date',
-              width: 130,
-              render: (d: string) => (
-                <span className="whitespace-nowrap text-[12px] text-gray-300">
-                  {dayjs(d).isValid() ? dayjs(d).format('MMM D, HH:mm') : d}
-                </span>
-              ),
-            },
-            { title: 'Country', dataIndex: 'country', width: 90 },
-            { title: 'Event', dataIndex: 'event', ellipsis: true },
-            {
-              title: 'Impact',
-              dataIndex: 'importance',
-              width: 90,
-              render: (i: string) => <Tag color={impColor[i]}>{i}</Tag>,
-            },
-            { title: 'Prev', dataIndex: 'previous', width: 70, render: (v) => v ?? '—' },
-            { title: 'Fcst', dataIndex: 'forecast', width: 70, render: (v) => v ?? '—' },
-            { title: 'Actual', dataIndex: 'actual', width: 70, render: (v) => v ?? '—' },
-          ]}
-        />
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <Table<EconomicEvent>
+            loading={isLoading}
+            dataSource={rows}
+            rowKey="id"
+            size="small"
+            pagination={{ pageSize: 8, size: 'small' }}
+            scroll={{ x: 600 }}
+            columns={[
+              {
+                title: 'Date',
+                dataIndex: 'date',
+                width: 100,
+                fixed: 'left' as const,
+                render: (d: string) => (
+                  <span className="whitespace-nowrap text-[12px] text-gray-300">
+                    {dayjs(d).isValid() ? dayjs(d).format('MMM D, HH:mm') : d}
+                  </span>
+                ),
+              },
+              { title: 'Event', dataIndex: 'event', width: 160, ellipsis: true },
+              { title: 'Country', dataIndex: 'country', width: 80 },
+              {
+                title: 'Impact',
+                dataIndex: 'importance',
+                width: 75,
+                render: (i: string) => <Tag color={impColor[i]}>{i}</Tag>,
+              },
+              { title: 'Prev', dataIndex: 'previous', width: 70, render: (v: string) => v ?? '—' },
+              { title: 'Fcst', dataIndex: 'forecast', width: 70, render: (v: string) => v ?? '—' },
+              { title: 'Actual', dataIndex: 'actual', width: 70, render: (v: string) => v ?? '—' },
+            ]}
+          />
+        </div>
       )}
     </Panel>
   );
