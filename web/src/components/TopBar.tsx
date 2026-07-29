@@ -1,23 +1,35 @@
 'use client';
 
 import { useState } from 'react';
-import { AutoComplete, Button, Badge, Dropdown } from 'antd';
+import { AutoComplete, Button, Badge, Dropdown, message } from 'antd';
 import { SearchOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
+import { api, apiError } from '@/lib/api';
 import { useAuthStore } from '@/store/auth';
+import { useAddToWatchlist } from '@/hooks/useWatchlist';
+
+interface SearchOption {
+  value: string;
+  label: React.ReactNode;
+  kind: 'instrument' | 'news';
+  name?: string;
+}
 
 export function TopBar({ connected }: { connected: boolean }) {
   const router = useRouter();
   const { user, logout } = useAuthStore();
-  const [options, setOptions] = useState<{ value: string; label: React.ReactNode }[]>([]);
+  const addToWatchlist = useAddToWatchlist();
+  const [options, setOptions] = useState<SearchOption[]>([]);
+  const [query, setQuery] = useState('');
 
   const onSearch = async (q: string) => {
     if (q.length < 1) return setOptions([]);
     try {
       const { data } = await api.get('/search', { params: { q } });
-      const instruments = (data.data.instruments ?? []).map((i: any) => ({
+      const instruments: SearchOption[] = (data.data.instruments ?? []).map((i: any) => ({
         value: i.symbol,
+        kind: 'instrument' as const,
+        name: i.name,
         label: (
           <div className="flex justify-between">
             <span className="font-medium">{i.symbol}</span>
@@ -25,8 +37,9 @@ export function TopBar({ connected }: { connected: boolean }) {
           </div>
         ),
       }));
-      const news = (data.data.news ?? []).slice(0, 4).map((n: any) => ({
+      const news: SearchOption[] = (data.data.news ?? []).slice(0, 4).map((n: any) => ({
         value: n.url,
+        kind: 'news' as const,
         label: <span className="text-gray-400">📰 {n.title}</span>,
       }));
       setOptions([...instruments, ...news]);
@@ -35,8 +48,27 @@ export function TopBar({ connected }: { connected: boolean }) {
     }
   };
 
-  const onSelect = (value: string) => {
-    if (value.startsWith('http')) window.open(value, '_blank');
+  const onSelect = async (value: string, option: SearchOption) => {
+    if (option.kind === 'news') {
+      window.open(value, '_blank');
+      setQuery('');
+      return;
+    }
+
+    if (!user) {
+      message.info('Sign in to add instruments to your watchlist.');
+      router.push('/login');
+      return;
+    }
+
+    try {
+      await addToWatchlist.mutateAsync({ symbol: value, name: option.name });
+      message.success(`${value} added to your watchlist`);
+    } catch (e) {
+      message.error(apiError(e));
+    } finally {
+      setQuery('');
+    }
   };
 
   return (
@@ -53,6 +85,8 @@ export function TopBar({ connected }: { connected: boolean }) {
 
       <div className="min-w-0 flex-1 md:mx-auto md:max-w-md">
         <AutoComplete
+          value={query}
+          onChange={setQuery}
           options={options}
           onSearch={onSearch}
           onSelect={onSelect}
