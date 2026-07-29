@@ -70,7 +70,9 @@ async def get_quotes(symbols: list[str]) -> list[Quote]:
     if not symbols:
         return []
     key = "quotes:" + ",".join(sorted(symbols))
-    return await cached(key, 15, lambda: asyncio.to_thread(_fetch_quotes_sync, symbols))
+    return await cached(
+        key, 15, lambda: asyncio.to_thread(_fetch_quotes_sync, symbols), cache_empty=False
+    )
 
 
 def _fetch_sparkline_sync(symbol: str) -> list[SparklinePoint]:
@@ -91,7 +93,9 @@ def _fetch_sparkline_sync(symbol: str) -> list[SparklinePoint]:
 async def get_sparkline(symbol: str) -> list[SparklinePoint]:
     """Intraday sparkline (2-day window, 15-minute candles). Cached 60s."""
     key = f"spark:{symbol}"
-    return await cached(key, 60, lambda: asyncio.to_thread(_fetch_sparkline_sync, symbol))
+    return await cached(
+        key, 60, lambda: asyncio.to_thread(_fetch_sparkline_sync, symbol), cache_empty=False
+    )
 
 
 async def get_market_overview() -> list[MarketCard]:

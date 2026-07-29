@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import time
 from collections.abc import Awaitable, Callable
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import redis.asyncio as aioredis
 
@@ -28,11 +28,45 @@ redis_client: aioredis.Redis = aioredis.from_url(
     retry_on_timeout=False,
 )
 
+# Fresh values, honouring each key's TTL.
 _mem_cache: dict[str, tuple[float, float, str]] = {}
+# Last payload that actually had content, kept without expiry as a lifeboat for
+# when every upstream is failing.
+_last_good: dict[str, str] = {}
+
+# When a producer comes back empty and we fall back to `_last_good`, wait this
+# long before hitting the upstream again — otherwise a hard-down provider gets
+# retried on literally every request.
+_EMPTY_RETRY_SECONDS = 60.0
 
 
-async def cached(key: str, ttl_seconds: int, producer: Callable[[], Awaitable[T]]) -> T:
-    """Return cached JSON if present, else run ``producer``, cache, and return."""
+def _has_content(value: Any) -> bool:
+    """Whether a producer actually returned data.
+
+    For every feed in this app an empty list/dict means "the upstream failed",
+    not "there is genuinely nothing" — so it must never be cached as if it were
+    a real answer.
+    """
+    if value is None:
+        return False
+    if isinstance(value, (list, dict, tuple, set, str)):
+        return len(value) > 0
+    return True
+
+
+async def cached(
+    key: str,
+    ttl_seconds: int,
+    producer: Callable[[], Awaitable[T]],
+    *,
+    cache_empty: bool = True,
+) -> T:
+    """Return cached JSON if present, else run ``producer``, cache, and return.
+
+    Set ``cache_empty=False`` for upstream data feeds, where an empty result
+    signals failure: the empty value is then never cached, and the last result
+    that did have content is served instead.
+    """
     now = time.monotonic()
 
     # --- try Redis first ---
@@ -52,14 +86,25 @@ async def cached(key: str, ttl_seconds: int, producer: Callable[[], Awaitable[T]
 
     # --- produce fresh value ---
     value = await producer()
+    has_content = _has_content(value)
 
-    serialised = json.dumps(value)
+    if has_content or cache_empty:
+        serialised = json.dumps(value)
+        _mem_cache[key] = (now, ttl_seconds, serialised)
+        if has_content:
+            _last_good[key] = serialised
+        try:
+            await redis_client.set(key, serialised, ex=ttl_seconds)
+        except Exception:
+            pass  # non-fatal
+        return value
 
-    # store in memory unconditionally (survives Redis-less deployments)
-    _mem_cache[key] = (now, ttl_seconds, serialised)
+    # --- producer came back empty: serve the last good payload if we have one ---
+    stale = _last_good.get(key)
+    if stale is not None:
+        logger.warn(f"{key} produced no data, serving last known result")
+        _mem_cache[key] = (now, _EMPTY_RETRY_SECONDS, stale)
+        return json.loads(stale)
 
-    try:
-        await redis_client.set(key, serialised, ex=ttl_seconds)
-    except Exception:
-        pass  # non-fatal
+    logger.warn(f"{key} produced no data and no previous result is available")
     return value

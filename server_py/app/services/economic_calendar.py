@@ -115,16 +115,18 @@ async def _fetch_forex_factory(client: httpx.AsyncClient) -> list[EconomicEvent]
 async def _fetch_tradays(client: httpx.AsyncClient) -> list[EconomicEvent]:
     try:
         now = datetime.now(UTC)
-        from_ts = int(now.timestamp()) * 1000
-        to_ts = int((now + timedelta(days=7)).timestamp()) * 1000
+        # The endpoint wants plain ISO datetime strings (no offset, no millis)
+        # plus bitmask filters — the "all" masks come from the site's own
+        # calendar.js (AllImportances = 15, AllCurrencies = 262143). Passing
+        # epoch millis or a 0 mask silently returns an empty list.
         resp = await client.post(
             "https://www.mql5.com/en/economic-calendar/content",
             data={
                 "date_mode": 0,
-                "from": from_ts,
-                "to": to_ts,
-                "importance": 0,
-                "currencies": "0",
+                "from": now.strftime("%Y-%m-%dT00:00:00"),
+                "to": (now + timedelta(days=7)).strftime("%Y-%m-%dT23:59:59"),
+                "importance": 15,
+                "currencies": 262143,
             },
             headers={
                 "User-Agent": "Mozilla/5.0 MarketIntelligenceDashboard/1.0",
@@ -142,11 +144,20 @@ async def _fetch_tradays(client: httpx.AsyncClient) -> list[EconomicEvent]:
             if imp_raw == "none":
                 imp_raw = "low"
             currency = e.get("CurrencyCode") or ""
-            country_name = e.get("CountryName") or CURRENCY_LABEL.get(currency, currency or "Global")
+            country_name = e.get("CountryName") or CURRENCY_LABEL.get(
+                currency, currency or "Global"
+            )
+            # ReleaseDate is epoch millis UTC; FullDate carries the same instant
+            # but without an offset, which the browser would read as local time.
+            release_ms = e.get("ReleaseDate")
+            if isinstance(release_ms, (int, float)):
+                date = datetime.fromtimestamp(release_ms / 1000, UTC).isoformat()
+            else:
+                date = e.get("FullDate")
             events.append(
                 {
                     "id": f"td-{e.get('Id', idx)}",
-                    "date": e.get("FullDate"),
+                    "date": date,
                     "country": country_name,
                     "event": e.get("EventName") or "Economic event",
                     "importance": _impact_to_importance(imp_raw),
@@ -182,4 +193,4 @@ async def get_economic_calendar() -> list[EconomicEvent]:
         merged.sort(key=lambda e: e["date"])
         return merged
 
-    return await cached("calendar:economic", 60 * 60, produce)
+    return await cached("calendar:economic", 60 * 60, produce, cache_empty=False)

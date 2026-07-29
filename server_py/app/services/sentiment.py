@@ -36,7 +36,7 @@ async def _get_fear_greed() -> dict[str, Any] | None:
             logger.warn("Fear & Greed fetch failed")
             return None
 
-    return await cached("sentiment:feargreed", 60 * 30, produce)
+    return await cached("sentiment:feargreed", 60 * 30, produce, cache_empty=False)
 
 
 async def _get_vix() -> dict[str, Any] | None:

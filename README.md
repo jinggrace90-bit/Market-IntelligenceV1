@@ -202,7 +202,7 @@ manual conversion needed.
 ## 📝 Notes & honest limitations
 
 - **Provider rate limits**: Yahoo Finance and the ForexFactory feed occasionally throttle by IP (HTTP 429). Redis caching, in-memory fallback caching, and request throttling keep this rare; endpoints degrade to the last-known state rather than erroring.
-- **Economic Calendar reliability**: The primary source (ForexFactory mirror at `nfs.faireconomy.media`) is an unofficial community mirror and can be intermittent. When it fails, the backend automatically falls back to **Tradays/MQL5** (MetaQuotes' official calendar). An in-memory cache also keeps the last successful result for 1 hour, so brief outages from both sources are transparent to users.
+- **Economic Calendar reliability**: The primary source (ForexFactory mirror at `nfs.faireconomy.media`) is an unofficial community mirror and can be intermittent. When it fails, the backend automatically falls back to **Tradays/MQL5** (MetaQuotes' official calendar). On top of that, feed caches never store an empty result — an empty response means the upstream failed, so the last result that *did* have data is served instead and the upstream is retried a minute later. Outages are therefore invisible to users once any fetch has succeeded.
 - **US 2Y yield**: Yahoo doesn't expose a clean 2Y index ticker, so the rates row uses 10Y (`^TNX`), 5Y (`^FVX`), and 13-week (`^IRX`) as available proxies.
 - **AI cost control**: AI endpoints require login and cache every result in Postgres so tokens are never re-spent on the same article.
 - The Fear & Greed Index from alternative.me is crypto-derived but widely used as a broad market risk-appetite proxy.
