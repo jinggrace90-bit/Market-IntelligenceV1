@@ -81,7 +81,7 @@
 | `AI_PROVIDER` | `local` |
 | `LOCAL_AI_BASE_URL` | `https://api.groq.com/openai/v1` |
 | `LOCAL_AI_API_KEY` | 你的 `gsk_...` Groq 密钥 |
-| `LOCAL_AI_MODEL` | `llama-3.3-70b-versatile` |
+| `LOCAL_AI_MODEL` | `openai/gpt-oss-120b` |
 | `CORS_ORIGIN` | 先填 `http://localhost:3000`，**第 4 步再改** |
 
 > **不用填 `REDIS_URL`** —— 不设它，程序会自动跳过缓存、正常运行。
@@ -149,7 +149,7 @@ NODE_ENV            = production
 AI_PROVIDER         = local
 LOCAL_AI_BASE_URL   = https://api.groq.com/openai/v1
 LOCAL_AI_API_KEY    = 你的 Groq key
-LOCAL_AI_MODEL      = llama-3.3-70b-versatile
+LOCAL_AI_MODEL      = openai/gpt-oss-120b
 CORS_ORIGIN         = 你的 Vercel 网址
 （不设 REDIS_URL）
 ```
@@ -180,8 +180,21 @@ NEXT_PUBLIC_API_URL = 你的 Render 网址
 **第一次访问很慢（30-60 秒）**
 → 正常。Render 免费版闲置会休眠，第一次访问在唤醒，之后就快了。
 
-**AI 报错 "model not found"**
-→ Groq 偶尔下线旧模型。去 https://console.groq.com 看当前可用模型，把 Render 的 `LOCAL_AI_MODEL` 换成在线的（如 `llama-3.1-8b-instant`）。
+**AI 分析显示 "unavailable" / "local AI server not reachable"**
+→ 最常见的原因是 **Groq 下线了你在用的模型**。Groq 会提前几个月邮件通知后停用旧模型，到期当天调用就会直接失败。
+  - 去 https://console.groq.com/docs/models 看当前可用模型
+  - 把 Render 的 `LOCAL_AI_MODEL` 改成 **Production（生产级）** 列表里的一个，例如 `openai/gpt-oss-120b`
+  - **不要选 Preview 列表里的**——那些随时可能再次被下线，等于埋同样的雷
+  - 改完保存，Render 会自动重新部署
+
+> 已知停用记录：`llama-3.3-70b-versatile` 和 `llama-3.1-8b-instant` 于 **2026-08-16** 停用。
+
+其他可能的错误信息：
+| 错误内容 | 原因 |
+| --- | --- |
+| `set ANTHROPIC_API_KEY` | `AI_PROVIDER` 不等于 `local`（变量没设或拼错）|
+| `local AI provider not configured` | `LOCAL_AI_API_KEY` 是空的 |
+| `local AI server not reachable` | 模型已下线 / key 失效 / 触发限流 |
 
 ---
 

@@ -128,8 +128,15 @@ own. In `.env`:
 AI_PROVIDER=local
 LOCAL_AI_BASE_URL=https://api.groq.com/openai/v1
 LOCAL_AI_API_KEY=<your Groq key>
-LOCAL_AI_MODEL=llama-3.3-70b-versatile   # check Groq's console for current model IDs
+LOCAL_AI_MODEL=openai/gpt-oss-120b       # see note below on model retirement
 ```
+
+> ⚠️ **Groq retires models.** `llama-3.3-70b-versatile` and `llama-3.1-8b-instant`
+> were shut down on 2026-08-16, which breaks AI analysis with a
+> "local AI server not reachable" error until `LOCAL_AI_MODEL` is repointed.
+> Check [console.groq.com/docs/models](https://console.groq.com/docs/models) and
+> prefer a model listed under **Production** — **Preview** models can be pulled
+> at short notice.
 
 **Option B — Local model (free, but only while your computer is on).**
 
