@@ -43,7 +43,7 @@ export default function DashboardPage() {
         </div>
 
         <footer className="py-6 text-center text-[11px] text-gray-600">
-          Data: Yahoo Finance, financial RSS feeds, alternative.me, Trading Economics · AI by Claude.
+          Data: Yahoo Finance, financial RSS feeds, alternative.me, Trading Economics · AI-powered analysis.
           Educational use only — not financial advice.
         </footer>
       </main>

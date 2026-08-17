@@ -54,7 +54,7 @@ export function AiAnalysisModal({
 
       {loading && (
         <div className="flex items-center gap-3 py-8 text-gray-400">
-          <Spin /> Analyzing with Claude…
+          <Spin /> Analyzing…
         </div>
       )}
 
