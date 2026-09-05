@@ -9,7 +9,7 @@ import { useThemeStore, initTheme } from '@/store/theme';
 
 const darkTokens = {
   colorPrimaryBg: '#0a0e17',
-  colorPrimary: '#3b82f6',
+  colorPrimary: '#2563eb',
   colorBgBase: '#0a0e17',
   colorBgContainer: '#111725',
   colorBgElevated: '#161d2e',

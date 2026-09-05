@@ -57,7 +57,7 @@ export function SentimentPanel({ data }: { data: SentimentSnapshot | null }) {
   const bearPct = totalNews ? Math.round((news!.bearish / totalNews) * 100) : 0;
 
   return (
-    <Panel title="Market Sentiment" subtitle="Fear &amp; Greed · VIX · AI news tone">
+    <Panel title="Market Sentiment" subtitle="Fear &amp; Greed · VIX · AI news tone" variant="stat">
       <div className="space-y-4">
         {data?.fearGreed ? (
           <FearGreedGauge value={data.fearGreed.value} label={data.fearGreed.label} />

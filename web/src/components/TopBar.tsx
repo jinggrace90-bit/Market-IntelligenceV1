@@ -74,7 +74,10 @@ export function TopBar({ connected }: { connected: boolean }) {
   };
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-border bg-bg/90 px-3 py-3 backdrop-blur sm:gap-4 sm:px-4 md:px-6">
+    <header
+      className="sticky top-0 z-20 flex items-center gap-2 border-b border-border bg-bg/90 px-3 py-3 backdrop-blur sm:gap-4 sm:px-4 md:px-6"
+      style={{ boxShadow: 'var(--header-shadow)' }}
+    >
       <div className="flex shrink-0 items-center gap-2">
         <div className="grid h-8 w-8 place-items-center rounded-lg bg-accent font-bold text-white">
           M

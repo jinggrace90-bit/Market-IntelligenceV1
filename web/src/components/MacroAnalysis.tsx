@@ -46,7 +46,7 @@ export function MacroAnalysis({ enabled }: { enabled: boolean }) {
   };
 
   return (
-    <Panel title="AI Macro Analysis" subtitle="See how a macro event ripples across asset classes">
+    <Panel title="AI Macro Analysis" subtitle="See how a macro event ripples across asset classes" variant="analysis">
       {!enabled ? (
         <Alert type="info" showIcon message="Sign in to generate macro cause-and-effect chains." />
       ) : (

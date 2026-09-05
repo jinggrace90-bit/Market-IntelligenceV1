@@ -9,3 +9,5 @@ coverage/
 .DS_Store
 server/prisma/*.db
 *.tsbuildinfo
+
+.impeccable/
