@@ -14,7 +14,7 @@ function gaugeColor(value: number): string {
 
 function FearGreedGauge({ value, label }: { value: number; label: string }) {
   const radius = 70;
-  const circumference = Math.PI * radius; // half circle
+  const circumference = Math.PI * radius;
   const clamped = Math.max(0, Math.min(100, value));
   const dash = (clamped / 100) * circumference;
   const color = gaugeColor(clamped);
@@ -25,7 +25,7 @@ function FearGreedGauge({ value, label }: { value: number; label: string }) {
         <path
           d="M 20 96 A 70 70 0 0 1 160 96"
           fill="none"
-          stroke="#1f2937"
+          stroke="var(--color-gauge-track)"
           strokeWidth="12"
           strokeLinecap="round"
         />
@@ -38,14 +38,14 @@ function FearGreedGauge({ value, label }: { value: number; label: string }) {
           strokeDasharray={`${dash} ${circumference}`}
           style={{ transition: 'stroke-dasharray 0.6s ease' }}
         />
-        <text x="90" y="82" textAnchor="middle" className="fill-gray-50" fontSize="30" fontWeight="700">
+        <text x="90" y="82" textAnchor="middle" fill="var(--color-gauge-text)" fontSize="30" fontWeight="700">
           {Math.round(clamped)}
         </text>
       </svg>
       <div className="text-sm font-semibold" style={{ color }}>
         {label}
       </div>
-      <div className="text-[11px] text-gray-500">Fear &amp; Greed Index</div>
+      <div className="text-[11px] text-muted">Fear &amp; Greed Index</div>
     </div>
   );
 }
@@ -62,13 +62,13 @@ export function SentimentPanel({ data }: { data: SentimentSnapshot | null }) {
         {data?.fearGreed ? (
           <FearGreedGauge value={data.fearGreed.value} label={data.fearGreed.label} />
         ) : (
-          <div className="py-6 text-center text-sm text-gray-500">Loading sentiment…</div>
+          <div className="py-6 text-center text-sm text-muted">Loading sentiment…</div>
         )}
 
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-lg border border-border bg-panel2 p-3">
-            <div className="text-[11px] uppercase text-gray-500">VIX (Volatility)</div>
-            <div className="mt-1 font-mono text-lg font-semibold tabular-nums text-gray-100">
+            <div className="text-[11px] uppercase text-muted">VIX (Volatility)</div>
+            <div className="mt-1 font-mono text-lg font-semibold tabular-nums text-primary">
               {data?.vix ? formatPrice(data.vix.value) : '—'}
             </div>
             {data?.vix && (
@@ -78,18 +78,18 @@ export function SentimentPanel({ data }: { data: SentimentSnapshot | null }) {
             )}
           </div>
           <div className="rounded-lg border border-border bg-panel2 p-3">
-            <div className="text-[11px] uppercase text-gray-500">AI News Tone</div>
+            <div className="text-[11px] uppercase text-muted">AI News Tone</div>
             {totalNews > 0 ? (
               <>
-                <div className="mt-1 text-lg font-semibold text-gray-100">
+                <div className="mt-1 text-lg font-semibold text-primary">
                   <span className="text-up">{bullPct}%</span>
-                  <span className="mx-1 text-gray-600">/</span>
+                  <span className="mx-1 text-faint">/</span>
                   <span className="text-down">{bearPct}%</span>
                 </div>
-                <div className="text-[11px] text-gray-500">bull / bear ({totalNews} analyzed)</div>
+                <div className="text-[11px] text-muted">bull / bear ({totalNews} analyzed)</div>
               </>
             ) : (
-              <div className="mt-1 text-[12px] text-gray-500">Analyze articles to populate</div>
+              <div className="mt-1 text-[12px] text-muted">Analyze articles to populate</div>
             )}
           </div>
         </div>
@@ -97,7 +97,7 @@ export function SentimentPanel({ data }: { data: SentimentSnapshot | null }) {
         {totalNews > 0 && (
           <div className="flex h-2 overflow-hidden rounded-full bg-panel2">
             <div className="bg-up" style={{ width: `${bullPct}%` }} />
-            <div className="bg-gray-600" style={{ width: `${100 - bullPct - bearPct}%` }} />
+            <div className="bg-faint" style={{ width: `${100 - bullPct - bearPct}%` }} />
             <div className="bg-down" style={{ width: `${bearPct}%` }} />
           </div>
         )}

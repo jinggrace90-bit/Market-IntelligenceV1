@@ -31,8 +31,6 @@ export function AiAnalysisModal({
     setError(null);
     setAnalysis(null);
     api
-      // Local (non-Anthropic) AI providers can take much longer than the
-      // default client timeout, especially on modest hardware.
       .post(`/ai/news/${article.id}`, undefined, { timeout: 120_000 })
       .then((r) => active && setAnalysis(r.data))
       .catch((e) => active && setError(apiError(e, 'AI analysis failed')))
@@ -44,16 +42,16 @@ export function AiAnalysisModal({
 
   return (
     <Modal
-      title={<span className="text-gray-100">AI News Analysis</span>}
+      title={<span className="text-primary">AI News Analysis</span>}
       open={open}
       onCancel={onClose}
       footer={null}
       width={640}
     >
-      {article && <div className="mb-3 text-sm font-medium text-gray-200">{article.title}</div>}
+      {article && <div className="mb-3 text-sm font-medium text-primary">{article.title}</div>}
 
       {loading && (
-        <div className="flex items-center gap-3 py-8 text-gray-400">
+        <div className="flex items-center gap-3 py-8 text-secondary">
           <Spin /> Analyzing…
         </div>
       )}
@@ -72,12 +70,12 @@ export function AiAnalysisModal({
       )}
 
       {analysis && (
-        <div className="space-y-3 text-sm text-gray-300">
+        <div className="space-y-3 text-sm text-secondary">
           <div className="flex flex-wrap items-center gap-2">
             <Tag color={sentimentColor[analysis.sentiment]} className="uppercase">
               {analysis.sentiment}
             </Tag>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted">
               score {analysis.sentimentScore.toFixed(2)} · {analysis.model}
               {analysis.cached ? ' · cached' : ''}
             </span>
@@ -87,7 +85,7 @@ export function AiAnalysisModal({
 
           {analysis.keyEvents.length > 0 && (
             <div>
-              <div className="mb-1 text-xs font-semibold uppercase text-gray-500">Key events</div>
+              <div className="mb-1 text-xs font-semibold uppercase text-muted">Key events</div>
               <ul className="list-disc pl-5">
                 {analysis.keyEvents.map((e, i) => (
                   <li key={i}>{e}</li>
@@ -113,12 +111,12 @@ export function AiAnalysisModal({
 
           <Divider className="my-2" />
           <div>
-            <div className="mb-1 text-xs font-semibold uppercase text-gray-500">
+            <div className="mb-1 text-xs font-semibold uppercase text-muted">
               Market implication
             </div>
             <p className="leading-relaxed">{analysis.marketImplication}</p>
           </div>
-          <p className="text-[11px] text-gray-600">
+          <p className="text-[11px] text-faint">
             Educational analysis only — not financial advice.
           </p>
         </div>

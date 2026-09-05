@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { AutoComplete, Button, Badge, Dropdown, message } from 'antd';
-import { SearchOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, LogoutOutlined, SunOutlined, MoonOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import { api, apiError } from '@/lib/api';
 import { useAuthStore } from '@/store/auth';
+import { useThemeStore } from '@/store/theme';
 import { useAddToWatchlist } from '@/hooks/useWatchlist';
 
 interface SearchOption {
@@ -18,6 +19,7 @@ interface SearchOption {
 export function TopBar({ connected }: { connected: boolean }) {
   const router = useRouter();
   const { user, logout } = useAuthStore();
+  const { theme, toggle } = useThemeStore();
   const addToWatchlist = useAddToWatchlist();
   const [options, setOptions] = useState<SearchOption[]>([]);
   const [query, setQuery] = useState('');
@@ -33,14 +35,14 @@ export function TopBar({ connected }: { connected: boolean }) {
         label: (
           <div className="flex justify-between">
             <span className="font-medium">{i.symbol}</span>
-            <span className="ml-2 truncate text-gray-500">{i.name}</span>
+            <span className="ml-2 truncate text-secondary">{i.name}</span>
           </div>
         ),
       }));
       const news: SearchOption[] = (data.data.news ?? []).slice(0, 4).map((n: any) => ({
         value: n.url,
         kind: 'news' as const,
-        label: <span className="text-gray-400">📰 {n.title}</span>,
+        label: <span className="text-secondary">📰 {n.title}</span>,
       }));
       setOptions([...instruments, ...news]);
     } catch {
@@ -78,8 +80,8 @@ export function TopBar({ connected }: { connected: boolean }) {
           M
         </div>
         <div className="hidden sm:block">
-          <div className="text-sm font-semibold text-gray-100">Market Intelligence</div>
-          <div className="-mt-0.5 text-[10px] text-gray-500">Real-time macro &amp; news</div>
+          <div className="text-sm font-semibold text-primary">Market Intelligence</div>
+          <div className="-mt-0.5 text-[10px] text-muted">Real-time macro &amp; news</div>
         </div>
       </div>
 
@@ -94,9 +96,9 @@ export function TopBar({ connected }: { connected: boolean }) {
           popupMatchSelectWidth={Math.min(420, typeof window !== 'undefined' ? window.innerWidth - 32 : 420)}
         >
           <div className="relative">
-            <SearchOutlined className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-gray-500" />
+            <SearchOutlined className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-muted" />
             <input
-              className="h-9 w-full rounded-lg border border-border bg-panel pl-9 pr-3 text-sm text-gray-100 outline-none placeholder:text-gray-600 focus:border-accent"
+              className="h-9 w-full rounded-lg border border-border bg-panel pl-9 pr-3 text-sm text-primary outline-none placeholder:text-faint focus:border-accent"
               placeholder="Search stocks, crypto, commodities, news…"
             />
           </div>
@@ -104,9 +106,16 @@ export function TopBar({ connected }: { connected: boolean }) {
       </div>
 
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <Button
+          type="text"
+          size="small"
+          icon={theme === 'dark' ? <SunOutlined /> : <MoonOutlined />}
+          onClick={toggle}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        />
         <Badge
           status={connected ? 'success' : 'warning'}
-          text={<span className="hidden text-[11px] text-gray-400 md:inline">{connected ? 'Live' : 'Connecting'}</span>}
+          text={<span className="hidden text-[11px] text-secondary md:inline">{connected ? 'Live' : 'Connecting'}</span>}
         />
         {user ? (
           <Dropdown

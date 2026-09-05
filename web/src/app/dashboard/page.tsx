@@ -42,7 +42,7 @@ export default function DashboardPage() {
           <EconomicCalendarPanel />
         </div>
 
-        <footer className="py-6 text-center text-[11px] text-gray-600">
+        <footer className="py-6 text-center text-[11px] text-faint">
           Data: Yahoo Finance, financial RSS feeds, alternative.me, Trading Economics · AI-powered analysis.
           Educational use only — not financial advice.
         </footer>

@@ -17,7 +17,7 @@ const PRESETS = [
 function DirectionIcon({ direction }: { direction?: string }) {
   if (direction === 'up') return <RiseOutlined className="text-up" />;
   if (direction === 'down') return <FallOutlined className="text-down" />;
-  return <MinusOutlined className="text-gray-500" />;
+  return <MinusOutlined className="text-muted" />;
 }
 
 export function MacroAnalysis({ enabled }: { enabled: boolean }) {
@@ -32,8 +32,6 @@ export function MacroAnalysis({ enabled }: { enabled: boolean }) {
     setError(null);
     setChain(null);
     try {
-      // Local (non-Anthropic) AI providers can take much longer than the
-      // default client timeout, especially on modest hardware.
       const { data } = await api.post(
         '/ai/macro',
         { scenario: text.trim() },
@@ -91,7 +89,7 @@ export function MacroAnalysis({ enabled }: { enabled: boolean }) {
 
           {chain && (
             <div className="mt-4">
-              <div className="mb-3 text-sm text-gray-300">{chain.thesis}</div>
+              <div className="mb-3 text-sm text-secondary">{chain.thesis}</div>
               <div className="space-y-1">
                 {chain.chain.map((node, i) => (
                   <motion.div
@@ -103,19 +101,19 @@ export function MacroAnalysis({ enabled }: { enabled: boolean }) {
                     <div className="flex items-start gap-3 rounded-lg border border-border bg-panel2 p-3">
                       <DirectionIcon direction={node.direction} />
                       <div>
-                        <div className="text-[13px] font-semibold text-gray-100">{node.label}</div>
-                        <div className="text-[12px] text-gray-400">{node.detail}</div>
+                        <div className="text-[13px] font-semibold text-primary">{node.label}</div>
+                        <div className="text-[12px] text-secondary">{node.detail}</div>
                       </div>
                     </div>
                     {i < chain.chain.length - 1 && (
-                      <div className="flex justify-center py-0.5 text-gray-600">
+                      <div className="flex justify-center py-0.5 text-faint">
                         <ArrowDownOutlined />
                       </div>
                     )}
                   </motion.div>
                 ))}
               </div>
-              <p className="mt-3 text-[11px] text-gray-600">
+              <p className="mt-3 text-[11px] text-faint">
                 Educational illustration of macro linkages — not financial advice.
               </p>
             </div>

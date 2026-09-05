@@ -5,20 +5,25 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: '#0a0e17',
-        panel: '#111725',
-        panel2: '#161d2e',
-        border: '#1f2937',
-        up: '#16c784',
-        down: '#ea3943',
-        accent: '#3b82f6',
+        bg: 'var(--color-bg)',
+        panel: 'var(--color-panel)',
+        panel2: 'var(--color-panel2)',
+        border: 'var(--color-border)',
+        up: 'var(--color-up)',
+        down: 'var(--color-down)',
+        accent: 'var(--color-accent)',
+      },
+      textColor: {
+        primary: 'var(--color-text-primary)',
+        secondary: 'var(--color-text-secondary)',
+        muted: 'var(--color-text-muted)',
+        faint: 'var(--color-text-faint)',
       },
       fontFamily: {
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
     },
   },
-  // AntD owns most component styling; disable preflight to avoid resets clashing.
   corePlugins: { preflight: false },
   plugins: [],
 };

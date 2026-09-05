@@ -34,15 +34,15 @@ function Row({ item, onAnalyze }: { item: NewsItem; onAnalyze: (i: NewsItem) => 
             href={item.url}
             target="_blank"
             rel="noreferrer"
-            className="text-[13px] font-medium leading-snug text-gray-100 hover:text-accent"
+            className="text-[13px] font-medium leading-snug text-primary hover:text-accent"
           >
-            {item.title} <LinkOutlined className="text-[10px] text-gray-500" />
+            {item.title} <LinkOutlined className="text-[10px] text-muted" />
           </a>
           {item.summary && (
-            <p className="mt-1 line-clamp-2 text-[12px] text-gray-400">{item.summary}</p>
+            <p className="mt-1 line-clamp-2 text-[12px] text-secondary">{item.summary}</p>
           )}
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-gray-500">
-            <span className="font-medium text-gray-400">{item.source}</span>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted">
+            <span className="font-medium text-secondary">{item.source}</span>
             <span>·</span>
             <span>{relativeTime(item.publishedAt)}</span>
             {item.country && <Tag className="!m-0 !border-0 !bg-panel2 !text-[10px]">{item.country}</Tag>}
@@ -81,7 +81,6 @@ export function NewsFeed({ liveItems }: { liveItems: NewsItem[] }) {
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useNewsFeed(filters);
 
-  // Merge live WS items on top when no filters are active.
   const showLive = !debounced && !category && !important;
   const merged = useMemo(() => {
     const pageItems = data?.pages.flatMap((p) => p.items) ?? [];
@@ -121,7 +120,7 @@ export function NewsFeed({ liveItems }: { liveItems: NewsItem[] }) {
       >
         <Input
           allowClear
-          prefix={<SearchOutlined className="text-gray-500" />}
+          prefix={<SearchOutlined className="text-muted" />}
           placeholder="Search headlines…"
           value={search}
           onChange={(e) => {

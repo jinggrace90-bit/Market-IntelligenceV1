@@ -60,7 +60,7 @@ export function EconomicCalendarPanel() {
                 width: 100,
                 fixed: 'left' as const,
                 render: (d: string) => (
-                  <span className="whitespace-nowrap text-[12px] text-gray-300">
+                  <span className="whitespace-nowrap text-[12px] text-secondary">
                     {dayjs(d).isValid() ? dayjs(d).format('MMM D, HH:mm') : d}
                   </span>
                 ),

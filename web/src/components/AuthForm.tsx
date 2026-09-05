@@ -46,10 +46,10 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
           <div className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-xl bg-accent text-lg font-bold text-white">
             M
           </div>
-          <h1 className="text-xl font-semibold text-gray-100">
+          <h1 className="text-xl font-semibold text-primary">
             {mode === 'login' ? 'Welcome back' : 'Create your account'}
           </h1>
-          <p className="mt-1 text-[13px] text-gray-500">
+          <p className="mt-1 text-[13px] text-muted">
             Real-time market intelligence for investors
           </p>
         </div>
@@ -60,7 +60,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
         >
           {mode === 'register' && (
             <div>
-              <label className="mb-1 block text-[12px] text-gray-400">Name</label>
+              <label className="mb-1 block text-[12px] text-secondary">Name</label>
               <Controller
                 name="name"
                 control={control}
@@ -69,7 +69,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             </div>
           )}
           <div>
-            <label className="mb-1 block text-[12px] text-gray-400">Email</label>
+            <label className="mb-1 block text-[12px] text-secondary">Email</label>
             <Controller
               name="email"
               control={control}
@@ -86,7 +86,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             {errors.email && <p className="mt-1 text-[11px] text-down">{errors.email.message}</p>}
           </div>
           <div>
-            <label className="mb-1 block text-[12px] text-gray-400">Password</label>
+            <label className="mb-1 block text-[12px] text-secondary">Password</label>
             <Controller
               name="password"
               control={control}
@@ -113,7 +113,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             {mode === 'login' ? 'Sign in' : 'Create account'}
           </Button>
 
-          <p className="pt-1 text-center text-[12px] text-gray-500">
+          <p className="pt-1 text-center text-[12px] text-muted">
             {mode === 'login' ? (
               <>
                 No account?{' '}
@@ -130,8 +130,8 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
               </>
             )}
           </p>
-          <p className="text-center text-[12px] text-gray-600">
-            <Link href="/dashboard" className="hover:text-gray-400">
+          <p className="text-center text-[12px] text-faint">
+            <Link href="/dashboard" className="hover:text-secondary">
               Continue as guest →
             </Link>
           </p>

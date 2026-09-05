@@ -77,7 +77,7 @@ export function WatchlistPanel({ enabled }: { enabled: boolean }) {
           <Spin />
         </div>
       ) : items.length === 0 ? (
-        <div className="py-6 text-center text-sm text-gray-500">
+        <div className="py-6 text-center text-sm text-muted">
           <PlusOutlined /> Search above to add your first instrument
         </div>
       ) : (
@@ -88,12 +88,12 @@ export function WatchlistPanel({ enabled }: { enabled: boolean }) {
             return (
               <div key={item.id} className="flex items-center justify-between py-2">
                 <div className="min-w-0">
-                  <div className="text-[13px] font-semibold text-gray-100">{item.symbol}</div>
-                  <div className="truncate text-[11px] text-gray-500">{item.name ?? q?.name}</div>
+                  <div className="text-[13px] font-semibold text-primary">{item.symbol}</div>
+                  <div className="truncate text-[11px] text-muted">{item.name ?? q?.name}</div>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <div className="font-mono text-[13px] tabular-nums text-gray-100">
+                    <div className="font-mono text-[13px] tabular-nums text-primary">
                       {q ? formatPrice(q.price) : '—'}
                     </div>
                     {q && (

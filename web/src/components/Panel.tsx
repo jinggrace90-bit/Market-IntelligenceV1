@@ -16,8 +16,8 @@ export function Panel({ title, subtitle, action, children, className = '', bodyC
     <section className={`rounded-xl border border-border bg-panel ${className}`}>
       <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
         <div>
-          <h2 className="text-sm font-semibold text-gray-100">{title}</h2>
-          {subtitle && <p className="mt-0.5 text-[11px] text-gray-500">{subtitle}</p>}
+          <h2 className="text-sm font-semibold text-primary">{title}</h2>
+          {subtitle && <p className="mt-0.5 text-[11px] text-muted">{subtitle}</p>}
         </div>
         {action}
       </header>

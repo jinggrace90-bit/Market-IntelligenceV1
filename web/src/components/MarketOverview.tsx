@@ -19,9 +19,9 @@ function Card({ card, index }: { card: MarketCard; index: number }) {
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <Tooltip title={card.symbol}>
-            <div className="truncate text-[13px] font-semibold text-gray-100">{card.name}</div>
+            <div className="truncate text-[13px] font-semibold text-primary">{card.name}</div>
           </Tooltip>
-          <div className="text-[11px] uppercase tracking-wide text-gray-500">{card.group}</div>
+          <div className="text-[11px] uppercase tracking-wide text-muted">{card.group}</div>
         </div>
         <span
           className={`rounded px-1.5 py-0.5 text-[11px] font-semibold tabular-nums ${
@@ -32,7 +32,7 @@ function Card({ card, index }: { card: MarketCard; index: number }) {
         </span>
       </div>
 
-      <div className="mt-1 font-mono text-lg font-semibold tabular-nums text-gray-50">
+      <div className="mt-1 font-mono text-lg font-semibold tabular-nums text-primary">
         {formatPrice(card.price)}
       </div>
       <div className={`text-[12px] tabular-nums ${up ? 'text-up' : 'text-down'}`}>
