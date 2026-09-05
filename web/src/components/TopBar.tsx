@@ -2,7 +2,15 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { AutoComplete, Button, Badge, Dropdown, message } from 'antd';
-import { SearchOutlined, UserOutlined, LogoutOutlined, SunOutlined, MoonOutlined } from '@ant-design/icons';
+import {
+  SearchOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  SunOutlined,
+  MoonOutlined,
+  PlusOutlined,
+  LinkOutlined,
+} from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import { api, apiError } from '@/lib/api';
 import { useAuthStore } from '@/store/auth';
@@ -10,6 +18,16 @@ import { useThemeStore } from '@/store/theme';
 import { useAddToWatchlist } from '@/hooks/useWatchlist';
 import { useHotkey } from '@/hooks/useHotkey';
 import { ShortcutsModal } from './ShortcutsModal';
+
+interface InstrumentHit {
+  symbol: string;
+  name?: string;
+}
+
+interface NewsHit {
+  url: string;
+  title: string;
+}
 
 interface SearchOption {
   value: string;
@@ -36,25 +54,72 @@ export function TopBar({ connected }: { connected: boolean }) {
   useHotkey('/', focusSearch);
   useHotkey('?', () => setHelpOpen(true));
 
+  const addSymbol = useCallback(
+    async (symbol: string, name?: string) => {
+      if (!user) {
+        message.info('Sign in to add instruments to your watchlist.');
+        router.push('/login');
+        return;
+      }
+      try {
+        await addToWatchlist.mutateAsync({ symbol, name });
+        message.success(`${symbol} added to your watchlist`);
+      } catch (e) {
+        message.error(apiError(e));
+      }
+    },
+    [user, router, addToWatchlist],
+  );
+
+  const renderInstrumentLabel = (hit: InstrumentHit): React.ReactNode => (
+    <div className="flex items-center justify-between gap-2">
+      <div className="flex min-w-0 items-baseline gap-2">
+        <span className="font-medium">{hit.symbol}</span>
+        {hit.name && <span className="truncate text-secondary">{hit.name}</span>}
+      </div>
+      <button
+        type="button"
+        aria-label={`Add ${hit.symbol} to watchlist`}
+        title={user ? 'Add to watchlist' : 'Sign in to add to watchlist'}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          addSymbol(hit.symbol, hit.name);
+          setQuery('');
+        }}
+        className="ml-2 inline-flex h-6 shrink-0 items-center gap-1 rounded-md border border-border bg-panel2 px-2 text-[11px] font-medium text-secondary hover:border-accent hover:text-accent"
+      >
+        <PlusOutlined className="text-[10px]" />
+        Watchlist
+      </button>
+    </div>
+  );
+
+  const renderNewsLabel = (hit: NewsHit): React.ReactNode => (
+    <div className="flex items-center gap-2 text-secondary">
+      <LinkOutlined className="text-[11px] text-muted" />
+      <span className="truncate">{hit.title}</span>
+    </div>
+  );
+
   const onSearch = async (q: string) => {
     if (q.length < 1) return setOptions([]);
     try {
       const { data } = await api.get('/search', { params: { q } });
-      const instruments: SearchOption[] = (data.data.instruments ?? []).map((i: any) => ({
-        value: i.symbol,
+      const instruments: SearchOption[] = (data.data.instruments ?? []).map((i: InstrumentHit) => ({
+        value: `instrument:${i.symbol}`,
         kind: 'instrument' as const,
         name: i.name,
-        label: (
-          <div className="flex justify-between">
-            <span className="font-medium">{i.symbol}</span>
-            <span className="ml-2 truncate text-secondary">{i.name}</span>
-          </div>
-        ),
+        label: renderInstrumentLabel(i),
       }));
-      const news: SearchOption[] = (data.data.news ?? []).slice(0, 4).map((n: any) => ({
-        value: n.url,
+      const news: SearchOption[] = (data.data.news ?? []).slice(0, 4).map((n: NewsHit) => ({
+        value: `news:${n.url}`,
         kind: 'news' as const,
-        label: <span className="text-secondary">📰 {n.title}</span>,
+        label: renderNewsLabel(n),
       }));
       setOptions([...instruments, ...news]);
     } catch {
@@ -62,27 +127,16 @@ export function TopBar({ connected }: { connected: boolean }) {
     }
   };
 
-  const onSelect = async (value: string, option: SearchOption) => {
+  const onSelect = (value: string, option: SearchOption) => {
     if (option.kind === 'news') {
-      window.open(value, '_blank');
+      const url = value.replace(/^news:/, '');
+      window.open(url, '_blank', 'noreferrer');
       setQuery('');
       return;
     }
-
-    if (!user) {
-      message.info('Sign in to add instruments to your watchlist.');
-      router.push('/login');
-      return;
-    }
-
-    try {
-      await addToWatchlist.mutateAsync({ symbol: value, name: option.name });
-      message.success(`${value} added to your watchlist`);
-    } catch (e) {
-      message.error(apiError(e));
-    } finally {
-      setQuery('');
-    }
+    // Instrument rows are non-destructive: clicking the row does not mutate the
+    // watchlist. Adding is an explicit action via the row's + Watchlist button.
+    setQuery('');
   };
 
   return (
