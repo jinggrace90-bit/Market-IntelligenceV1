@@ -6,12 +6,17 @@ const config: Config = {
     extend: {
       colors: {
         bg: 'var(--color-bg)',
+        bg2: 'var(--color-bg-2)',
         panel: 'var(--color-panel)',
         panel2: 'var(--color-panel2)',
         border: 'var(--color-border)',
+        'border-hi': 'var(--color-border-hi)',
         up: 'var(--color-up)',
+        'up-soft': 'var(--color-up-soft)',
         down: 'var(--color-down)',
+        'down-soft': 'var(--color-down-soft)',
         accent: 'var(--color-accent)',
+        amber: 'var(--color-amber)',
       },
       textColor: {
         primary: 'var(--color-text-primary)',
@@ -20,7 +25,9 @@ const config: Config = {
         faint: 'var(--color-text-faint)',
       },
       fontFamily: {
-        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        sans: ['var(--font-sans)', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Georgia', 'serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
     },
   },

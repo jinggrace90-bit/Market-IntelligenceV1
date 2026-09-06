@@ -8,24 +8,24 @@ import '@ant-design/v5-patch-for-react-19';
 import { useThemeStore, initTheme } from '@/store/theme';
 
 const darkTokens = {
-  colorPrimaryBg: '#0a0e17',
-  colorPrimary: '#2563eb',
-  colorBgBase: '#0a0e17',
-  colorBgContainer: '#111725',
-  colorBgElevated: '#161d2e',
-  colorBorder: '#1f2937',
-  borderRadius: 8,
+  colorPrimaryBg: '#0a0a0f',
+  colorPrimary: '#a58bff',
+  colorBgBase: '#0a0a0f',
+  colorBgContainer: '#14141c',
+  colorBgElevated: '#181820',
+  colorBorder: 'rgba(255,255,255,0.10)',
+  borderRadius: 10,
   fontSize: 13,
 };
 
 const lightTokens = {
-  colorPrimaryBg: '#f5f6f8',
-  colorPrimary: '#2563eb',
-  colorBgBase: '#f5f6f8',
+  colorPrimaryBg: '#f6f4ef',
+  colorPrimary: '#5b3fd1',
+  colorBgBase: '#f6f4ef',
   colorBgContainer: '#ffffff',
   colorBgElevated: '#ffffff',
-  colorBorder: '#e2e4e9',
-  borderRadius: 8,
+  colorBorder: 'rgba(11,11,17,0.10)',
+  borderRadius: 10,
   fontSize: 13,
 };
 

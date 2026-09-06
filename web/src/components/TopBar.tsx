@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import { AutoComplete, Button, Badge, Dropdown, message } from 'antd';
+import { AutoComplete, Button, Dropdown, message } from 'antd';
 import {
   SearchOutlined,
   UserOutlined,
@@ -74,24 +74,21 @@ export function TopBar({ connected }: { connected: boolean }) {
   const renderInstrumentLabel = (hit: InstrumentHit): React.ReactNode => (
     <div className="flex items-center justify-between gap-2">
       <div className="flex min-w-0 items-baseline gap-2">
-        <span className="font-medium">{hit.symbol}</span>
-        {hit.name && <span className="truncate text-secondary">{hit.name}</span>}
+        <span className="font-mono text-[13px] font-medium">{hit.symbol}</span>
+        {hit.name && <span className="truncate text-secondary italic font-serif">{hit.name}</span>}
       </div>
       <button
         type="button"
         aria-label={`Add ${hit.symbol} to watchlist`}
         title={user ? 'Add to watchlist' : 'Sign in to add to watchlist'}
-        onMouseDown={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
+        onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
           addSymbol(hit.symbol, hit.name);
           setQuery('');
         }}
-        className="ml-2 inline-flex h-6 shrink-0 items-center gap-1 rounded-md border border-border bg-panel2 px-2 text-[11px] font-medium text-secondary hover:border-accent hover:text-accent"
+        className="ml-2 inline-flex h-6 shrink-0 items-center gap-1 rounded-full border border-border bg-panel2 px-2.5 text-[11px] font-medium text-secondary hover:border-accent hover:text-accent"
       >
         <PlusOutlined className="text-[10px]" />
         Watchlist
@@ -129,29 +126,36 @@ export function TopBar({ connected }: { connected: boolean }) {
 
   const onSelect = (value: string, option: SearchOption) => {
     if (option.kind === 'news') {
-      const url = value.replace(/^news:/, '');
-      window.open(url, '_blank', 'noreferrer');
+      window.open(value.replace(/^news:/, ''), '_blank', 'noreferrer');
       setQuery('');
       return;
     }
-    // Instrument rows are non-destructive: clicking the row does not mutate the
-    // watchlist. Adding is an explicit action via the row's + Watchlist button.
     setQuery('');
   };
 
   return (
     <>
       <header
-        className="sticky top-0 z-20 flex items-center gap-2 border-b border-border bg-bg/90 px-3 py-3 backdrop-blur sm:gap-4 sm:px-4 md:px-6"
-        style={{ boxShadow: 'var(--header-shadow)' }}
+        className="sticky top-0 z-20 flex items-center gap-3 px-4 py-3 sm:gap-5 sm:px-6 md:px-8"
+        style={{
+          background: 'color-mix(in srgb, var(--color-bg) 78%, transparent)',
+          backdropFilter: 'blur(20px) saturate(1.2)',
+          WebkitBackdropFilter: 'blur(20px) saturate(1.2)',
+          borderBottom: '1px solid var(--color-border)',
+          boxShadow: 'var(--header-shadow)',
+        }}
       >
-        <div className="flex shrink-0 items-center gap-2">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-accent font-bold text-white">
+        <div className="flex shrink-0 items-baseline gap-3">
+          <span className="font-serif italic text-primary" style={{ fontSize: 26, lineHeight: 1, letterSpacing: '-0.02em' }}>
             M
-          </div>
+          </span>
           <div className="hidden sm:block">
-            <div className="text-sm font-semibold text-primary">Market Intelligence</div>
-            <div className="-mt-0.5 text-[10px] text-muted">Real-time macro &amp; news</div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+              Market Intelligence
+            </div>
+            <div className="mt-0.5 font-serif italic text-[12px] text-muted">
+              the market, in daylight
+            </div>
           </div>
         </div>
 
@@ -163,13 +167,13 @@ export function TopBar({ connected }: { connected: boolean }) {
             onSearch={onSearch}
             onSelect={onSelect}
             className="w-full"
-            popupMatchSelectWidth={Math.min(420, typeof window !== 'undefined' ? window.innerWidth - 32 : 420)}
+            popupMatchSelectWidth={Math.min(440, typeof window !== 'undefined' ? window.innerWidth - 32 : 440)}
           >
             <div className="relative">
-              <SearchOutlined className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-muted" />
+              <SearchOutlined className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-muted" />
               <input
                 ref={searchRef}
-                className="h-9 w-full rounded-lg border border-border bg-panel pl-9 pr-16 text-sm text-primary outline-none placeholder:text-faint focus:border-accent"
+                className="glass h-10 w-full rounded-full pl-10 pr-16 text-[13px] text-primary outline-none placeholder:text-faint focus:border-accent"
                 placeholder="Search stocks, crypto, commodities, news…"
               />
               <kbd
@@ -183,14 +187,32 @@ export function TopBar({ connected }: { connected: boolean }) {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <span
+            className="hidden items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] md:inline-flex"
+            style={{
+              color: connected ? 'var(--color-up)' : 'var(--color-amber)',
+              background: connected
+                ? 'color-mix(in srgb, var(--color-up) 12%, transparent)'
+                : 'color-mix(in srgb, var(--color-amber) 12%, transparent)',
+              borderColor: connected
+                ? 'color-mix(in srgb, var(--color-up) 32%, transparent)'
+                : 'color-mix(in srgb, var(--color-amber) 32%, transparent)',
+            }}
+          >
+            <span
+              className={connected ? 'live-dot' : 'h-1.5 w-1.5 rounded-full'}
+              style={!connected ? { background: 'var(--color-amber)' } : undefined}
+            />
+            {connected ? 'Live' : 'Connecting'}
+          </span>
           <Button
             type="text"
             size="small"
             onClick={() => setHelpOpen(true)}
             title="Keyboard shortcuts (?)"
-            className="!hidden !text-muted hover:!text-primary sm:!inline-flex"
+            className="!hidden !font-mono !text-secondary hover:!text-primary sm:!inline-flex"
           >
-            <span className="font-mono text-[13px]">?</span>
+            <span className="text-[13px]">?</span>
           </Button>
           <Button
             type="text"
@@ -198,10 +220,6 @@ export function TopBar({ connected }: { connected: boolean }) {
             icon={theme === 'dark' ? <SunOutlined /> : <MoonOutlined />}
             onClick={toggle}
             title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          />
-          <Badge
-            status={connected ? 'success' : 'warning'}
-            text={<span className="hidden text-[11px] text-secondary md:inline">{connected ? 'Live' : 'Connecting'}</span>}
           />
           {user ? (
             <Dropdown
@@ -221,12 +239,12 @@ export function TopBar({ connected }: { connected: boolean }) {
                 ],
               }}
             >
-              <Button icon={<UserOutlined />} size="small">
+              <Button icon={<UserOutlined />} size="small" shape="round">
                 <span className="hidden sm:inline">{user.name ?? 'Account'}</span>
               </Button>
             </Dropdown>
           ) : (
-            <Button type="primary" size="small" onClick={() => router.push('/login')}>
+            <Button type="primary" size="small" shape="round" onClick={() => router.push('/login')}>
               Sign in
             </Button>
           )}
