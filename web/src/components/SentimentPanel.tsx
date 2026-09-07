@@ -58,10 +58,10 @@ function FearGreedGauge({ value, label }: { value: number; label: string }) {
           style={{ filter: `drop-shadow(0 0 8px color-mix(in srgb, ${labelColor} 60%, transparent))` }}
         />
       </svg>
-      <div className="pointer-events-none absolute inset-x-0 top-[58%] -translate-y-1/2 text-center">
+      <div className="pointer-events-none absolute inset-x-0 top-[62%] -translate-y-1/2 text-center">
         <div
           className="font-serif italic tabular-nums text-primary"
-          style={{ fontSize: 72, lineHeight: 1, letterSpacing: '-0.045em' }}
+          style={{ fontSize: 48, lineHeight: 1, letterSpacing: '-0.035em' }}
           aria-label={`Fear and Greed reads ${Math.round(clamped)} out of 100 — ${label}`}
         >
           {Math.round(clamped)}

@@ -30,14 +30,23 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0a0a0f',
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0f' },
+    { media: '(prefers-color-scheme: light)', color: '#f6f4ef' },
+  ],
   width: 'device-width',
   initialScale: 1,
 };
 
+// Runs synchronously before hydration to prevent a dark→light (or vice versa) flash on refresh.
+const themeInitScript = `(function(){try{var s=localStorage.getItem('mid_theme');var t=(s==='light'||s==='dark')?s:'dark';var r=document.documentElement;r.setAttribute('data-theme',t);r.style.colorScheme=t;}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
+    <html lang="en" className={`${serif.variable} ${sans.variable} ${mono.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>
         <div className="ambient" aria-hidden />
         <div className="grain" aria-hidden />
