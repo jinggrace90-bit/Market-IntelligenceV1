@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Instrument_Serif, Instrument_Sans, JetBrains_Mono } from 'next/font/google';
 import { Providers } from './providers';
+import { MouseGlow } from '@/components/MouseGlow';
 import './globals.css';
 
 const serif = Instrument_Serif({
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <div className="ambient" aria-hidden />
         <div className="grain" aria-hidden />
+        <MouseGlow />
         <Providers>{children}</Providers>
       </body>
     </html>

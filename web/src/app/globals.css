@@ -180,9 +180,48 @@ body {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
+/* --------------------- Mouse-following soft glow ---------------------
+   A radial violet halo that trails the pointer. Sits at z-index:1 so
+   it's above the ambient orb and grain but below the app content
+   (z-index:2). Because `.glass` panels set `isolation: isolate`, the
+   card's own compositing seals off from this blend layer — the tint
+   lives on the room, not on the copy or the sparklines. */
+.mouse-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: max(60vw, 560px);
+  height: max(60vw, 560px);
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgba(165, 139, 255, 0.12) 0%,
+    rgba(165, 139, 255, 0.05) 40%,
+    transparent 72%
+  );
+  filter: blur(100px);
+  mix-blend-mode: overlay;
+  transform: translate3d(-9999px, -9999px, 0);
+  will-change: transform;
+  transition: opacity 400ms ease;
+}
+/* On light theme, overlay+violet reads a touch cool. Warm the mid-tone
+   a shade so the glow reads as light rather than a dim purple bruise. */
+:root[data-theme='light'] .mouse-glow {
+  background: radial-gradient(
+    closest-side,
+    rgba(140, 108, 255, 0.14) 0%,
+    rgba(140, 108, 255, 0.04) 40%,
+    transparent 72%
+  );
+  mix-blend-mode: multiply;
+}
+
 /* Everything the app renders needs to sit above the ambient layers */
 #__next,
-body > div:not(.ambient):not(.grain) {
+body > div:not(.ambient):not(.grain):not(.mouse-glow) {
   position: relative;
   z-index: 2;
 }
