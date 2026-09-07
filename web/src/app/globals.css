@@ -36,6 +36,15 @@
   --ambient-b: rgba(70, 190, 255, 0.16);
   --grain-blend: overlay;
   --grain-opacity: 0.32;
+
+  /* Ambient orb drift period — a single knob the market-mood rules bend.
+     Longer = calmer. Shorter = nervier. */
+  --ambient-drift-duration: 32s;
+
+  /* Keyboard focus ring — one token, applied globally via :focus-visible.
+     Two rings: a soft glow for shape, a hard accent stroke for clarity
+     against panels of any brightness. */
+  --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
 }
 
 [data-theme='light'] {
@@ -71,6 +80,9 @@
   --ambient-b: rgba(70, 190, 255, 0.10);
   --grain-blend: multiply;
   --grain-opacity: 0.28;
+
+  --ambient-drift-duration: 32s;
+  --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
 }
 
 html,
@@ -84,9 +96,15 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+  /* Smooth the theme toggle — token-consuming surfaces cross-fade
+     rather than snap. Kept short so the app never feels laggy. */
+  transition: background-color 220ms ease, color 220ms ease;
 }
 
-/* --------------------- Ambient background --------------------- */
+/* --------------------- Ambient background ---------------------
+   One radial + grain. Chosen after evaluating a dashboard's job:
+   the ornament sets a mood, then gets out of the way. A second orb
+   plus hover glow plus card stagger turned the surface into weather. */
 .ambient,
 .grain {
   position: fixed;
@@ -95,36 +113,66 @@ body {
   pointer-events: none;
 }
 .ambient { overflow: hidden; }
-.ambient::before,
-.ambient::after {
+.ambient::before {
   content: '';
   position: absolute;
   border-radius: 50%;
-  filter: blur(48px);
-}
-.ambient::before {
-  top: -14%;
-  left: -8%;
-  width: 60%;
-  height: 85%;
-  background: radial-gradient(closest-side, var(--ambient-a), transparent 70%);
-  animation: drift-a 26s ease-in-out infinite alternate;
-}
-.ambient::after {
-  top: 6%;
-  right: -12%;
-  width: 52%;
-  height: 78%;
-  background: radial-gradient(closest-side, var(--ambient-b), transparent 70%);
-  animation: drift-b 30s ease-in-out infinite alternate;
+  filter: blur(64px);
+  top: -18%;
+  left: -10%;
+  width: 78%;
+  height: 96%;
+  background: radial-gradient(
+    closest-side,
+    var(--ambient-a),
+    color-mix(in srgb, var(--ambient-b) 55%, transparent) 55%,
+    transparent 78%
+  );
+  animation: drift-a var(--ambient-drift-duration, 32s) ease-in-out infinite alternate;
+  /* Cross-fade the color when the market mood flips, so the room doesn't
+     jump — it settles into the new weather over a couple of seconds. */
+  transition: background 1600ms ease, filter 1600ms ease;
 }
 @keyframes drift-a {
   from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(55px, 45px) scale(1.06); }
+  to   { transform: translate(45px, 38px) scale(1.05); }
 }
-@keyframes drift-b {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(-65px, 35px) scale(1.05); }
+
+/* --------------------- Market-mood ambient ---------------------
+   dashboard/page.tsx stamps <html data-market-mood="breathing|retreating|mixed|listening">.
+   The single orb bends its color and drift period to match, keeping the
+   underlying design system intact — no new tokens are exposed above,
+   just the two knobs the ornament reads (--ambient-a, --ambient-drift-duration).
+   Kept quiet on purpose: this is atmospheric weather, not signal. */
+:root[data-market-mood='breathing'] {
+  /* risk-on, calm-warm — a shade of the up token blended into the accent */
+  --ambient-a: color-mix(in srgb, var(--color-up) 42%, var(--color-accent) 58%);
+  --ambient-b: color-mix(in srgb, var(--color-up) 18%, transparent);
+  --ambient-drift-duration: 44s;
+}
+:root[data-market-mood='retreating'] {
+  /* risk-off, nervy — a shade of the down token blended into the accent,
+     drift shortened so the room breathes faster */
+  --ambient-a: color-mix(in srgb, var(--color-down) 38%, var(--color-accent) 62%);
+  --ambient-b: color-mix(in srgb, var(--color-down) 20%, transparent);
+  --ambient-drift-duration: 22s;
+  --grain-opacity: 0.36;
+}
+:root[data-market-mood='mixed'] {
+  --ambient-drift-duration: 32s;
+}
+:root[data-market-mood='listening'] {
+  /* waiting for the first tick — dim the orb so the page reads quiet */
+  --ambient-a: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  --ambient-drift-duration: 52s;
+}
+/* Light-mode tempers the shifts so the page doesn't wash pink or lime */
+:root[data-theme='light'][data-market-mood='breathing'] {
+  --ambient-a: color-mix(in srgb, var(--color-up) 22%, var(--color-accent) 78%);
+}
+:root[data-theme='light'][data-market-mood='retreating'] {
+  --ambient-a: color-mix(in srgb, var(--color-down) 22%, var(--color-accent) 78%);
+  --grain-opacity: 0.32;
 }
 .grain {
   opacity: var(--grain-opacity);
@@ -151,6 +199,22 @@ body > div:not(.ambient):not(.grain) {
 
 .tabular-nums { font-variant-numeric: tabular-nums lining-nums; }
 
+/* --------------------- Keyboard focus ---------------------
+   One ring for every interactive primitive the app renders itself.
+   :where() keeps specificity at zero, so any component-level override
+   (including AntD's own) still wins. Mouse clicks don't get the ring
+   — :focus-visible only fires for keyboard/programmatic focus. */
+:where(a, button, [role='button'], input, select, textarea, summary, [tabindex]):not([tabindex='-1']):focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: inherit;
+}
+/* The TopBar search input applies its own rounded shape — inherit
+   from the parent glass shell doesn't work there, so pin the shape. */
+input.glass:focus-visible {
+  border-radius: 9999px;
+}
+
 /* --------------------- Aesthetic utilities --------------------- */
 .font-serif { font-family: var(--font-serif), Georgia, serif; }
 .font-mono { font-family: var(--font-mono), ui-monospace, monospace; }
@@ -168,6 +232,11 @@ body > div:not(.ambient):not(.grain) {
   border: 1px solid var(--color-border);
   backdrop-filter: blur(20px) saturate(1.1);
   -webkit-backdrop-filter: blur(20px) saturate(1.1);
+  /* Force each glass surface onto its own compositor layer so the
+     backdrop-filter re-samples cleanly when tokens flip (dark→light).
+     Without this, some Chromium builds keep a stale backdrop cache. */
+  isolation: isolate;
+  transition: background-color 220ms ease, border-color 220ms ease;
 }
 
 /* Live pulse */
@@ -183,26 +252,24 @@ body > div:not(.ambient):not(.grain) {
   animation: live-pulse 2s ease-in-out infinite;
 }
 
-/* Card hover glow */
-.card-glow {
-  position: relative;
-  overflow: hidden;
-}
-.card-glow::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(360px circle at var(--mx, 30%) var(--my, 20%),
-              color-mix(in srgb, var(--color-accent) 14%, transparent),
-              transparent 60%);
-  opacity: 0;
-  transition: opacity 0.3s;
-  pointer-events: none;
-}
-.card-glow:hover::before { opacity: 1; }
-
 /* Sparkline draw-in animation */
 @keyframes spark-draw {
   from { stroke-dashoffset: 800; }
   to   { stroke-dashoffset: 0; }
+}
+
+/* --------------------- Reduced-motion guard ---------------------
+   Users who ask their OS for less motion get a still ornament and
+   a still live-dot. During market shock, a still page reads calm. */
+@media (prefers-reduced-motion: reduce) {
+  html, body { transition: none; }
+  .ambient::before { animation: none; }
+  .live-dot { animation: none; }
+  .glass { transition: none; }
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

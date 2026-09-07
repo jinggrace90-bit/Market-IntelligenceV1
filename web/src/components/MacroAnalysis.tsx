@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Button, Input, Alert, Tag } from 'antd';
 import { ArrowDownOutlined, RiseOutlined, FallOutlined, MinusOutlined } from '@ant-design/icons';
-import { motion } from 'framer-motion';
 import { Panel } from './Panel';
 import { api, apiError } from '@/lib/api';
 import type { MacroChain } from '@/types';
@@ -92,12 +91,7 @@ export function MacroAnalysis({ enabled }: { enabled: boolean }) {
               <div className="mb-3 text-sm text-secondary">{chain.thesis}</div>
               <div className="space-y-1">
                 {chain.chain.map((node, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.08 }}
-                  >
+                  <div key={i}>
                     <div className="flex items-start gap-3 rounded-lg border border-border bg-panel2 p-3">
                       <DirectionIcon direction={node.direction} />
                       <div>
@@ -110,7 +104,7 @@ export function MacroAnalysis({ enabled }: { enabled: boolean }) {
                         <ArrowDownOutlined />
                       </div>
                     )}
-                  </motion.div>
+                  </div>
                 ))}
               </div>
               <p className="mt-3 text-[11px] text-faint">

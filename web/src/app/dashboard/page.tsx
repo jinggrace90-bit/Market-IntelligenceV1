@@ -28,7 +28,9 @@ function formatClock(): string {
   const day = d.toLocaleDateString('en-US', { weekday: 'short' });
   const date = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
   const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-  return `${day} ${date} · ${time}`;
+  // Prefix `Local` so a data-focused reader parses this as the reader's
+  // wall clock, not the freshness of the tape.
+  return `Local · ${day} ${date} · ${time}`;
 }
 
 export default function DashboardPage() {
@@ -41,6 +43,12 @@ export default function DashboardPage() {
   }, [loadSession]);
 
   const mood = useMemo(() => breathingCopy(market), [market]);
+  // Publish the mood on <html> so the ambient orb can bend its color and
+  // drift period to match. CSS owns the mapping; JS just names the state.
+  useEffect(() => {
+    document.documentElement.dataset.marketMood = mood.title;
+  }, [mood.title]);
+
   const [stamp, setStamp] = useState<string>('');
   useEffect(() => {
     setStamp(formatClock());

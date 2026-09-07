@@ -188,6 +188,9 @@ export function TopBar({ connected }: { connected: boolean }) {
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <span
+            role="status"
+            aria-live="polite"
+            title={connected ? 'Stream connected — data ticks in real time.' : 'Stream disconnected — the last values you see may be stale.'}
             className="hidden items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] md:inline-flex"
             style={{
               color: connected ? 'var(--color-up)' : 'var(--color-amber)',
@@ -202,8 +205,9 @@ export function TopBar({ connected }: { connected: boolean }) {
             <span
               className={connected ? 'live-dot' : 'h-1.5 w-1.5 rounded-full'}
               style={!connected ? { background: 'var(--color-amber)' } : undefined}
+              aria-hidden
             />
-            {connected ? 'Live' : 'Connecting'}
+            {connected ? 'Live · Streaming' : 'Reconnecting · Values may be stale'}
           </span>
           <Button
             type="text"

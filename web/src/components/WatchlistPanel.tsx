@@ -43,9 +43,36 @@ export function WatchlistPanel({ enabled }: { enabled: boolean }) {
 
   const onSelect = async (_v: string, option: Option) => {
     try {
-      await add.mutateAsync({ symbol: option.symbol, name: option.name });
+      const created = await add.mutateAsync({ symbol: option.symbol, name: option.name });
       setValue('');
       setOptions([]);
+      // Add is asymmetric to remove (Popconfirm) — offset that by wiring
+      // Undo into the confirmation itself, so a mistap on the AutoComplete
+      // menu is a single-click reversal instead of a two-step Popconfirm.
+      const key = `wl-add-${created?.id ?? option.symbol}-${Date.now()}`;
+      message.success({
+        key,
+        duration: 6,
+        content: (
+          <span className="inline-flex items-center gap-3">
+            <span>
+              <span className="font-mono font-medium">{option.symbol}</span> added to your watchlist
+            </span>
+            {created?.id && (
+              <button
+                type="button"
+                onClick={() => {
+                  remove.mutate(created.id);
+                  message.destroy(key);
+                }}
+                className="rounded-full border border-border bg-panel2 px-2.5 py-0.5 text-[11px] font-medium text-secondary hover:border-accent hover:text-accent"
+              >
+                Undo
+              </button>
+            )}
+          </span>
+        ),
+      });
     } catch (e) {
       message.error(apiError(e));
     }

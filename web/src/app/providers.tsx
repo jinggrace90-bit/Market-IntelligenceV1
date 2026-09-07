@@ -1,11 +1,15 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useState, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import { ConfigProvider, theme } from 'antd';
 import '@ant-design/v5-patch-for-react-19';
 import { useThemeStore, initTheme } from '@/store/theme';
+
+// Bridge to the theme the pre-hydration script chose, before first paint on
+// the client. Falls back to a no-op effect on the server.
+const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 const darkTokens = {
   colorPrimaryBg: '#0a0a0f',
@@ -45,12 +49,16 @@ export function Providers({ children }: { children: ReactNode }) {
 
   const currentTheme = useThemeStore((s) => s.theme);
 
-  useEffect(() => {
+  // Sync store to the theme the inline pre-hydration script chose,
+  // BEFORE first paint. This prevents the AntD ConfigProvider from
+  // briefly rendering under the wrong algorithm on refresh.
+  useIsoLayoutEffect(() => {
     initTheme();
   }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', currentTheme);
+    document.documentElement.style.colorScheme = currentTheme;
   }, [currentTheme]);
 
   const isDark = currentTheme === 'dark';
