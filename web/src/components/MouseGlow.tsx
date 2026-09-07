@@ -20,8 +20,7 @@ export function MouseGlow() {
     // OS-level toggle wants to suppress; the ornament itself is fine.
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Center on the viewport at start so first paint has the glow visible
-    // — otherwise the layer lives at translate(-9999px) until the first move.
+    // Center on the viewport at start so first paint has the glow visible.
     let targetX = window.innerWidth / 2;
     let targetY = window.innerHeight / 2;
     let renderedX = targetX;
@@ -29,9 +28,11 @@ export function MouseGlow() {
     let rafId: number | null = null;
 
     const paint = () => {
-      // The extra -50% shift centers the 60vw div on the pointer instead
-      // of anchoring its top-left there.
-      el.style.transform = `translate3d(${renderedX}px, ${renderedY}px, 0) translate(-50%, -50%)`;
+      // `left`/`top` position the element's origin; the static
+      // `transform: translate(-50%, -50%)` in globals.css re-centers
+      // that origin on the glow's midpoint.
+      el.style.left = `${renderedX}px`;
+      el.style.top = `${renderedY}px`;
     };
 
     const tick = () => {
