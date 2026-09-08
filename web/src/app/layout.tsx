@@ -49,7 +49,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
-        <div className="ambient" aria-hidden />
         <div className="grain" aria-hidden />
         <MouseGlow />
         <Providers>{children}</Providers>

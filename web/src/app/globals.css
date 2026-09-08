@@ -32,14 +32,8 @@
   --scrollbar-thumb: rgba(255, 255, 255, 0.12);
   --header-shadow: none;
 
-  --ambient-a: rgba(124, 92, 255, 0.24);
-  --ambient-b: rgba(70, 190, 255, 0.16);
   --grain-blend: overlay;
   --grain-opacity: 0.32;
-
-  /* Ambient orb drift period — a single knob the market-mood rules bend.
-     Longer = calmer. Shorter = nervier. */
-  --ambient-drift-duration: 32s;
 
   /* Keyboard focus ring — one token, applied globally via :focus-visible.
      Two rings: a soft glow for shape, a hard accent stroke for clarity
@@ -76,12 +70,9 @@
   --scrollbar-thumb: rgba(11, 11, 17, 0.18);
   --header-shadow: 0 1px 0 rgba(11, 11, 17, 0.06);
 
-  --ambient-a: rgba(91, 63, 209, 0.14);
-  --ambient-b: rgba(70, 190, 255, 0.10);
   --grain-blend: multiply;
   --grain-opacity: 0.28;
 
-  --ambient-drift-duration: 32s;
   --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
 }
 
@@ -102,79 +93,13 @@ body {
 }
 
 /* --------------------- Ambient background ---------------------
-   One radial + grain. Chosen after evaluating a dashboard's job:
-   the ornament sets a mood, then gets out of the way. A second orb
-   plus hover glow plus card stagger turned the surface into weather. */
-.ambient,
+   Grain only. The static purple orb was pulling attention away from
+   the pointer glow that's meant to be the sole atmospheric element. */
 .grain {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-}
-.ambient { overflow: hidden; }
-.ambient::before {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(64px);
-  top: -18%;
-  left: -10%;
-  width: 78%;
-  height: 96%;
-  background: radial-gradient(
-    closest-side,
-    var(--ambient-a),
-    color-mix(in srgb, var(--ambient-b) 55%, transparent) 55%,
-    transparent 78%
-  );
-  animation: drift-a var(--ambient-drift-duration, 32s) ease-in-out infinite alternate;
-  /* Cross-fade the color when the market mood flips, so the room doesn't
-     jump — it settles into the new weather over a couple of seconds. */
-  transition: background 1600ms ease, filter 1600ms ease;
-}
-@keyframes drift-a {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(45px, 38px) scale(1.05); }
-}
-
-/* --------------------- Market-mood ambient ---------------------
-   dashboard/page.tsx stamps <html data-market-mood="breathing|retreating|mixed|listening">.
-   The single orb bends its color and drift period to match, keeping the
-   underlying design system intact — no new tokens are exposed above,
-   just the two knobs the ornament reads (--ambient-a, --ambient-drift-duration).
-   Kept quiet on purpose: this is atmospheric weather, not signal. */
-:root[data-market-mood='breathing'] {
-  /* risk-on, calm-warm — a shade of the up token blended into the accent */
-  --ambient-a: color-mix(in srgb, var(--color-up) 42%, var(--color-accent) 58%);
-  --ambient-b: color-mix(in srgb, var(--color-up) 18%, transparent);
-  --ambient-drift-duration: 44s;
-}
-:root[data-market-mood='retreating'] {
-  /* risk-off, nervy — a shade of the down token blended into the accent,
-     drift shortened so the room breathes faster */
-  --ambient-a: color-mix(in srgb, var(--color-down) 38%, var(--color-accent) 62%);
-  --ambient-b: color-mix(in srgb, var(--color-down) 20%, transparent);
-  --ambient-drift-duration: 22s;
-  --grain-opacity: 0.36;
-}
-:root[data-market-mood='mixed'] {
-  --ambient-drift-duration: 32s;
-}
-:root[data-market-mood='listening'] {
-  /* waiting for the first tick — dim the orb so the page reads quiet */
-  --ambient-a: color-mix(in srgb, var(--color-accent) 45%, transparent);
-  --ambient-drift-duration: 52s;
-}
-/* Light-mode tempers the shifts so the page doesn't wash pink or lime */
-:root[data-theme='light'][data-market-mood='breathing'] {
-  --ambient-a: color-mix(in srgb, var(--color-up) 22%, var(--color-accent) 78%);
-}
-:root[data-theme='light'][data-market-mood='retreating'] {
-  --ambient-a: color-mix(in srgb, var(--color-down) 22%, var(--color-accent) 78%);
-  --grain-opacity: 0.32;
-}
-.grain {
   opacity: var(--grain-opacity);
   mix-blend-mode: var(--grain-blend);
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
@@ -182,7 +107,7 @@ body {
 
 /* --------------------- Mouse-following soft glow ---------------------
    A radial violet halo that trails the pointer. Sits at z-index:1 so
-   it's above the ambient orb and grain but below the app content
+   it's above the grain but below the app content
    (z-index:2). Page shells stay transparent (body already paints --color-bg)
    so this layer can show through gutters and glass. `screen` on dark
    lifts the near-black room; `multiply` on light stains the paper. */
@@ -221,9 +146,9 @@ body {
   mix-blend-mode: multiply;
 }
 
-/* Everything the app renders needs to sit above the ambient layers */
+/* Everything the app renders needs to sit above the atmospheric layers */
 #__next,
-body > div:not(.ambient):not(.grain):not(.mouse-glow) {
+body > div:not(.grain):not(.mouse-glow) {
   position: relative;
   z-index: 2;
 }
@@ -304,7 +229,6 @@ input.glass:focus-visible {
    a still live-dot. During market shock, a still page reads calm. */
 @media (prefers-reduced-motion: reduce) {
   html, body { transition: none; }
-  .ambient::before { animation: none; }
   .live-dot { animation: none; }
   .glass { transition: none; }
   * {
