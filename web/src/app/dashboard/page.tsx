@@ -43,11 +43,6 @@ export default function DashboardPage() {
   }, [loadSession]);
 
   const mood = useMemo(() => breathingCopy(market), [market]);
-  // Publish the mood on <html> so the ambient orb can bend its color and
-  // drift period to match. CSS owns the mapping; JS just names the state.
-  useEffect(() => {
-    document.documentElement.dataset.marketMood = mood.title;
-  }, [mood.title]);
 
   const [stamp, setStamp] = useState<string>('');
   useEffect(() => {

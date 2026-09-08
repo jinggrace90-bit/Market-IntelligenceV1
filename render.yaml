@@ -1,0 +1,90 @@
+# Render.com Blueprint — 一次性起后端 API + Postgres + Redis。
+#
+# 使用方法：
+#   1. 把这个文件提交到仓库根目录（已就位）。
+#   2. 到 https://dashboard.render.com/blueprints 点击 "New Blueprint"，
+#      选中本仓库；Render 会读到本文件并预览要创建的资源。
+#   3. 点击 "Apply"。第一次创建会问你填敏感 env（下面标 `sync: false` 的），
+#      填完就开始 build（首次约 5–10 分钟）。
+#   4. 部署成功后到 Web Service 页面复制它的公开 URL（形如
+#      https://mid-server.onrender.com），去 Vercel Project → Settings →
+#      Environment Variables 添加 NEXT_PUBLIC_API_URL 指向它，然后触发
+#      一次 Vercel 重新部署（任意提交即可）。
+#   5. 回到本文件的 CORS_ORIGIN 里把 Vercel 域名补上，重新推送。
+#
+# 关于费用：free 计划的 Web Service 15 分钟无请求会休眠，冷启动约 30–60s
+# 才醒来 —— 展示用可以接受；给别人试用就升到 starter（$7/月）避免打瞌睡。
+# Postgres/KeyValue 的 free 层各自也有配额，超了会锁读写。
+
+services:
+  # -------------------------------------------------------------------------
+  # FastAPI + Socket.IO 后端（Dockerfile 自带 alembic upgrade head，首次启动
+  # 会自动跑迁移；Render 会注入 $PORT，Dockerfile 已用 ${PORT} 监听）。
+  # -------------------------------------------------------------------------
+  - type: web
+    name: mid-server
+    runtime: docker
+    plan: free                       # 升 starter 前先跑通
+    region: singapore                # 与你所在时区最近的一档；亚太就 singapore
+    rootDir: server_py               # 把构建上下文限定在后端目录
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health     # Render 会用这个探活并做零停机切换
+    autoDeploy: true                 # push 到 main 自动重新部署
+    envVars:
+      # ---- 由 Render 自动接线的两条 —— 不用手填 ----
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mid-postgres
+          property: connectionString  # 形如 postgres://... 后端会自动加 +asyncpg
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: mid-redis
+          property: connectionString  # 形如 rediss://…（Render 的 Redis 走 TLS）
+
+      # ---- CORS：Vercel 前端的域名，逗号分隔，可以多写几个 ----
+      # 记得替换成你自己的 Vercel 生产域名 + 想放行的 preview 域名。
+      - key: CORS_ORIGIN
+        value: https://market-intelligence-wheat.vercel.app,http://localhost:3000
+
+      # ---- 应用配置 ----
+      - key: JWT_SECRET
+        generateValue: true          # Render 帮你生成一个随机 secret 一次
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: ANTHROPIC_MODEL
+        value: claude-haiku-4-5-20251001
+      - key: AI_PROVIDER
+        value: anthropic
+
+      # ---- 敏感 key：Blueprint apply 时 Render 会弹窗让你填 ----
+      # sync: false 意味着这些值不会写进 Blueprint，只存 Render 后台，
+      # 后续换 API key 直接在 Web Service 的 Environment 页改就好。
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: FINNHUB_API_KEY
+        sync: false
+      - key: NEWSAPI_KEY
+        sync: false
+      - key: ALPHAVANTAGE_API_KEY
+        sync: false
+
+  # -------------------------------------------------------------------------
+  # Redis（Render 现在叫 Key Value；行为等同 Redis 7）。
+  # -------------------------------------------------------------------------
+  - type: keyvalue
+    name: mid-redis
+    plan: free
+    region: singapore
+    ipAllowList: []                  # 空 = 仅同一 Render 项目内的服务可连
+
+databases:
+  # -------------------------------------------------------------------------
+  # Postgres 16。free 层 90 天后会归档 —— 演示够用，长期跑要升 starter。
+  # -------------------------------------------------------------------------
+  - name: mid-postgres
+    plan: free
+    region: singapore
+    databaseName: market_intelligence
+    user: mid
+    postgresMajorVersion: "16"
