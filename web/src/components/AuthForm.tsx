@@ -40,7 +40,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
   };
 
   return (
-    <div className="grid min-h-screen place-items-center bg-bg px-4">
+    <div className="grid min-h-screen place-items-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-xl bg-accent text-lg font-bold text-white">

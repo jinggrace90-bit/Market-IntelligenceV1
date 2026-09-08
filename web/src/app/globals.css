@@ -183,9 +183,9 @@ body {
 /* --------------------- Mouse-following soft glow ---------------------
    A radial violet halo that trails the pointer. Sits at z-index:1 so
    it's above the ambient orb and grain but below the app content
-   (z-index:2). Because `.glass` panels set `isolation: isolate`, the
-   card's own compositing seals off from this blend layer — the tint
-   lives on the room, not on the copy or the sparklines. */
+   (z-index:2). Page shells stay transparent (body already paints --color-bg)
+   so this layer can show through gutters and glass. `screen` on dark
+   lifts the near-black room; `multiply` on light stains the paper. */
 .mouse-glow {
   position: fixed;
   /* JS writes `left`/`top` on every rAF tick to place the glow's origin
@@ -195,29 +195,27 @@ body {
   left: 50vw;
   top: 50vh;
   transform: translate(-50%, -50%);
-  width: max(60vw, 560px);
-  height: max(60vw, 560px);
+  width: max(48vw, 480px);
+  height: max(48vw, 480px);
   z-index: 1;
   pointer-events: none;
   border-radius: 50%;
   background: radial-gradient(
     closest-side,
-    rgba(165, 139, 255, 0.12) 0%,
-    rgba(165, 139, 255, 0.05) 40%,
+    rgba(165, 139, 255, 0.48) 0%,
+    rgba(165, 139, 255, 0.18) 42%,
     transparent 72%
   );
-  filter: blur(100px);
-  mix-blend-mode: overlay;
+  filter: blur(48px);
+  mix-blend-mode: screen;
   will-change: left, top;
   transition: opacity 400ms ease;
 }
-/* On light theme, overlay+violet reads a touch cool. Warm the mid-tone
-   a shade so the glow reads as light rather than a dim purple bruise. */
 :root[data-theme='light'] .mouse-glow {
   background: radial-gradient(
     closest-side,
-    rgba(140, 108, 255, 0.14) 0%,
-    rgba(140, 108, 255, 0.04) 40%,
+    rgba(91, 63, 209, 0.32) 0%,
+    rgba(91, 63, 209, 0.12) 42%,
     transparent 72%
   );
   mix-blend-mode: multiply;
