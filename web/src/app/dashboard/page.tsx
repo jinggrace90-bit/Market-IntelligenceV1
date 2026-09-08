@@ -57,7 +57,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-bg text-primary">
+    <div className="min-h-screen text-primary">
       <TopBar connected={connected} />
 
       <main className="mx-auto max-w-[1560px] space-y-4 px-4 py-4 md:px-6 md:py-6">

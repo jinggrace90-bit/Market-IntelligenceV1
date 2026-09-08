@@ -4,9 +4,9 @@ import { useEffect, useRef } from 'react';
 
 /**
  * A single fixed radial glow that eases toward the pointer. Purely
- * atmospheric — sits behind content, mix-blend-mode: overlay tints the
- * background and doesn't fight the text or the cards' own paints.
- * All rendering is CSS; JS only sets `transform` on rAF ticks.
+ * atmospheric — sits behind content; CSS blend mode tints the room
+ * without fighting the text or the cards' own paints.
+ * All rendering is CSS; JS only writes `left`/`top` on rAF ticks.
  */
 export function MouseGlow() {
   const ref = useRef<HTMLDivElement>(null);
